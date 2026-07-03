@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="equipment_rental_damage_wizard_view_form" model="ir.ui.view">
+        <field name="name">equipment.rental.damage.wizard.form</field>
+        <field name="model">equipment.rental.damage.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Damage Recovery Invoicing">
+                <sheet>
+                    <div class="alert alert-warning mb-3" role="alert">
+                        <strong>QMS Recovery Protocol:</strong> Enter the repair costs for damaged items below. 
+                        Validating this wizard will generate a <strong>Customer Invoice</strong> for the total recovery amount.
+                    </div>
+                    <group>
+                        <field name="rental_id" readonly="1" options="{'no_open': True}"/>
+                    </group>
+                    <field name="line_ids" nolabel="1">
+                        <list editable="bottom" create="0" delete="0">
+                            <field name="product_id"/>
+                            <field name="rental_line_id" optional="hide"/>
+                            <field name="qty_damaged"/>
+                            <field name="repair_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                            <field name="currency_id" column_invisible="1"/>
+                            <field name="damage_notes" placeholder="Structural details..."/>
+                        </list>
+                    </field>
+                </sheet>
+                <footer>
+                    <button name="action_invoice_damages" string="Generate Recovery Invoice" type="object" class="btn-primary" data-hotkey="q"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel" data-hotkey="x"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_equipment_rental_damage_wizard" model="ir.actions.act_window">
+        <field name="name">Damage Recovery</field>
+        <field name="res_model">equipment.rental.damage.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="product_template_form_view_inherit_rental" model="ir.ui.view">
+        <field name="name">product.template.form.inherit.rental</field>
+        <field name="model">product.template</field>
+        <field name="inherit_id" ref="product.product_template_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[@name='options']" position="inside">
+                <span class="d-inline-block">
+                    <field name="is_rentable"/>
+                    <label for="is_rentable"/>
+                </span>
+            </xpath>
+        </field>
+    </record>
+    <record id="product_product_search_view_inherit_rental" model="ir.ui.view">
+        <field name="name">product.product.search.inherit.rental</field>
+        <field name="model">product.product</field>
+        <field name="inherit_id" ref="product.product_search_form_view"/>
+        <field name="arch" type="xml">
+            <xpath expr="//filter[@name='filter_to_sell']" position="after">
+                <filter string="Is Rentable" name="filter_is_rentable" domain="[('is_rentable', '=', True)]"/>
+            </xpath>
+        </field>
+    </record>
+</odoo>

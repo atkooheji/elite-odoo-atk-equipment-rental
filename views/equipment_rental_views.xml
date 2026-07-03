@@ -1,0 +1,479 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="equipment_rental_view_list" model="ir.ui.view">
+        <field name="name">equipment.rental.list</field>
+        <field name="model">equipment.rental</field>
+        <field name="arch" type="xml">
+            <list>
+                <header>
+                    <button name="%(atk_equipment_rental.action_rental_order_import_wizard)d" string="AI Import (Media)" type="action" class="btn-primary" icon="fa-magic"/>
+                </header>
+                <field name="name"/>
+                <field name="partner_id"/>
+                <field name="start_date" widget="datetime" string="Pickup"/>
+                <field name="end_date" widget="datetime" string="Return"/>
+                <field name="deposit_amount" string="Deposit"/>
+                <field name="total_amount" sum="Total"/>
+                <field name="state" widget="badge"
+                       decoration-muted="state == 'draft'"
+                       decoration-warning="state == 'return_inspection'"
+                       decoration-info="state in ('approved', 'on_rent')"
+                       decoration-success="state == 'closed'"
+                       decoration-danger="state == 'cancel'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="equipment_rental_view_form" model="ir.ui.view">
+        <field name="name">equipment.rental.form</field>
+        <field name="model">equipment.rental</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="%(atk_equipment_rental.action_rental_order_import_wizard)d" string="AI Import (Media)" type="action" class="btn-info" icon="fa-magic" invisible="state != 'draft'"/>
+                    <button name="action_approve" string="Approve KYC" class="oe_highlight" type="object" invisible="state != 'draft'"/>
+                    <button name="action_register_deposit" string="Register Deposit" type="object" class="btn-info" invisible="state != 'approved' or deposit_collected == True"/>
+                    <button name="action_dispatch" string="Dispatch / Handover" class="oe_highlight" type="object" invisible="state != 'approved' or deposit_collected == False"/>
+                    
+                    <button name="action_create_invoice" string="Generate Final Invoice" type="object" class="oe_highlight" invisible="state not in ('on_rent', 'return_inspection') or invoice_id"/>
+                    
+                    <button name="action_return_inspection" string="Enter Return Inspection" class="oe_highlight" type="object" invisible="state != 'on_rent'"/>
+                    
+                    <button name="%(atk_equipment_rental.action_equipment_rental_damage_wizard)d" 
+                            string="Invoiced Damaged Items" 
+                            type="action" 
+                            class="btn-danger"
+                            invisible="state not in ('return_inspection', 'closed')"/>
+
+                    <button name="action_close" string="Settle &amp; Close Order" class="oe_highlight" type="object" invisible="state != 'return_inspection'"/>
+                    <button name="action_return_deposit" type="object" string="Refund Deposit" class="btn-info" invisible="state not in ('return_inspection', 'closed') or deposit_refunded == True or deposit_collected == False"/>
+                    
+                    <button name="action_print_quotation_report" string="Print Quotation" type="object" invisible="state != 'draft'"/>
+                    <button name="action_print_qms_report" string="Print QMS Docket" type="object" invisible="state == 'draft'"/>
+                    <button name="action_print_mis_report" string="Print Profitability" type="object" invisible="state == 'draft'"/>
+                    <button name="action_print_audit_report" string="Print QMS Audit Trail" type="object" invisible="state == 'draft'"/>
+                    <button name="action_cancel" string="Cancel" type="object" invisible="state not in ('draft', 'approved')"/>
+                    
+                    <!-- Reset to Draft Button -->
+                    <button name="action_draft" string="Reset to Draft" type="object" invisible="state == 'draft'"/>
+                    
+                    <button name="action_approve_discount" string="Approve Strategic Discount" 
+                            type="object" class="btn-warning"
+                            groups="atk_equipment_rental.group_equipment_rental_manager"
+                            invisible="state != 'draft' or is_overdiscount == False or discount_approved == True"/>
+                    
+                    <field name="state" widget="statusbar" statusbar_visible="draft,approved,on_rent,return_inspection,closed"/>
+                </header>
+
+                <sheet>
+                    <!-- â”€â”€ Stat Buttons â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+                    <div class="oe_button_box" name="button_box">
+                        <!-- Delivery Stat Button -->
+                        <button name="action_view_delivery"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-truck">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="pickup_qty_total"/></span>
+                                <span class="o_stat_text">Delivery</span>
+                            </div>
+                        </button>
+                        <!-- Return Stat Button -->
+                        <button name="action_view_return"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-refresh">
+                            <div class="o_stat_info">
+                                <span class="o_stat_value"><field name="return_qty_total"/></span>
+                                <span class="o_stat_text">Returns</span>
+                            </div>
+                        </button>
+                        <!-- Deposit Invoice Button -->
+                        <button name="action_view_deposit_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-shield"
+                                invisible="not deposit_invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Deposit Inv.</span>
+                            </div>
+                        </button>
+                        <!-- Rental Invoice Button -->
+                        <button name="action_view_invoice"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-pencil-square-o"
+                                invisible="not invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Rental Inv.</span>
+                            </div>
+                        </button>
+                        <!-- Deposit Refund Button (Visible only if refund exists) -->
+                        <button name="action_view_deposit_refund"
+                                type="object"
+                                class="oe_stat_button"
+                                icon="fa-undo"
+                                invisible="not deposit_refund_invoice_id">
+                            <div class="o_stat_info">
+                                <span class="o_stat_text">Refund Inv.</span>
+                            </div>
+                        </button>
+                    </div>
+
+                    <!-- â”€â”€ Title â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+                    <div class="oe_title">
+                        <h1>
+                            <field name="name" readonly="1" class="text-primary"/>
+                        </h1>
+                    </div>
+
+                    <!-- â”€â”€ Pickup / Return / P&L Banner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+                    <div class="o_rental_schedule_banner alert alert-info mb-3 p-3" style="border-radius:8px; background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #dee2e6;" role="status">
+                        <div class="row align-items-center">
+                            <!-- Column 1: Schedule -->
+                            <div class="col-auto pe-4" style="border-right: 2px solid #dee2e6;">
+                                <span style="font-size:10px; font-weight:800; color:#495057; text-transform:uppercase; letter-spacing:1px;">ðŸ“… Schedule</span>
+                                <div style="font-size:14px; font-weight:700; color:#212529; margin-top:2px;">
+                                    <field name="start_date" widget="datetime" readonly="state != 'draft'" options="{'format': 'dd MMM, HH:mm'}"/>
+                                    <span class="mx-2 text-muted">â†’</span>
+                                    <field name="end_date" widget="datetime" readonly="state != 'draft'" options="{'format': 'dd MMM, HH:mm'}"/>
+                                </div>
+                            </div>
+                            <!-- Column 2: Financial Balance -->
+                            <div class="col-auto ps-4 pe-4" style="border-right: 2px solid #dee2e6;">
+                                <span style="font-size:10px; font-weight:800; color:#495057; text-transform:uppercase; letter-spacing:1px;">ðŸ’° Rental Balance</span>
+                                <div style="font-size:14px; font-weight:700; margin-top:2px;" invisible="not invoice_id">
+                                    <!-- Dynamic Color: Red if Unpaid, Orange if Partial, Green if Settled -->
+                                    <div class="text-danger" invisible="amount_paid != 0">
+                                        <field name="amount_due" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                    </div>
+                                    <div class="text-warning" invisible="amount_paid == 0 or amount_due == 0">
+                                        <field name="amount_paid" widget="monetary" options="{'currency_field': 'currency_id'}"/> Paid /
+                                        <field name="amount_due" widget="monetary" options="{'currency_field': 'currency_id'}"/> Due
+                                    </div>
+                                    <div class="text-success" invisible="amount_due != 0">
+                                        <field name="amount_paid" widget="monetary" options="{'currency_field': 'currency_id'}"/>
+                                        <span style="font-size:11px; margin-left:8px;">PAID FULL âœ…</span>
+                                    </div>
+                                </div>
+                                <div style="font-size:14px; font-weight:700; color:#6c757d; margin-top:2px;" invisible="invoice_id">
+                                    <span>Not Invoiced</span>
+                                </div>
+                            </div>
+                            <div class="col-auto ps-4 pe-4" style="border-right: 2px solid #dee2e6;">
+                                <span style="font-size:10px; font-weight:800; color:#495057; text-transform:uppercase; letter-spacing:1px;">ðŸ“Š MIS Profitability</span>
+                                <div style="font-size:14px; font-weight:700; color:#0d6efd; margin-top:2px;">
+                                    <field name="net_profit" widget="monetary" options="{'currency_field': 'currency_id'}" groups="atk_equipment_rental.group_equipment_rental_manager"/>
+                                    <span style="font-size:11px; color:#6c757d; margin-left:8px;" invisible="not has_extra_costs" groups="atk_equipment_rental.group_equipment_rental_manager">
+                                        (Costs: <field name="total_internal_cost" widget="monetary" options="{'currency_field': 'currency_id'}"/>)
+                                    </span>
+                                    <span class="badge rounded-pill bg-warning text-dark ms-2" invisible="is_overdiscount == False">
+                                        HIGH DISCOUNT (Requires Mgmt Override)
+                                        <field name="discount_approved" invisible="1"/>
+                                        <field name="is_overdiscount" invisible="1"/>
+                                    </span>
+                                </div>
+                            </div>
+                            <!-- Column 4: Security Deposit Status -->
+                            <div class="col-auto ps-4 pe-4" style="border-right: 2px solid #dee2e6;">
+                                <span style="font-size:10px; font-weight:800; color:#495057; text-transform:uppercase; letter-spacing:1px;">ðŸ›¡ï¸ Deposit</span>
+                                <div style="margin-top:2px;">
+                                    <span class="badge rounded-pill bg-danger" invisible="deposit_collected == True or deposit_refunded == True" style="font-size:12px;">
+                                        NOT PAID (BD <field name="deposit_amount"/>)
+                                    </span>
+                                    <span class="badge rounded-pill bg-success" invisible="deposit_collected == False or deposit_refunded == True" style="font-size:12px;">COLLECTED</span>
+                                    <span class="badge rounded-pill bg-info text-dark" invisible="deposit_refunded == False" style="font-size:12px;">REFUNDED</span>
+                                </div>
+                            </div>
+                            <!-- Column 5: Mobilization Progress (Roadmap #4) -->
+                            <div class="col ps-4 pe-4" style="border-right: 2px solid #dee2e6; min-width: 180px;">
+                                <span style="font-size:10px; font-weight:800; color:#495057; text-transform:uppercase; letter-spacing:1px;">ðŸšš Mobilization</span>
+                                <div style="margin-top:2px;">
+                                    <field name="mobilization_progress" widget="progressbar" 
+                                           options="{'current_value': 'pickup_qty_total', 'max_value': 'total_qty_total'}"/>
+                                    <div class="text-muted" style="font-size: 10px; margin-top: -5px;">
+                                        <field name="pickup_qty_total"/> / <field name="total_qty_total"/> Units Dispatched
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Column 6: SLA Performance -->
+                            <div class="col-auto ps-4">
+                                <span style="font-size:10px; font-weight:800; color:#495057; text-transform:uppercase; letter-spacing:1px;">âš¡ SLA Performance</span>
+                                <div style="margin-top:2px;">
+                                    <field name="pickup_sla_status" widget="badge" decoration-success="pickup_sla_status == 'on_time'" decoration-danger="pickup_sla_status == 'delayed'"/>
+                                    <span class="mx-1 text-muted">|</span>
+                                    <field name="return_sla_status" widget="badge" decoration-success="return_sla_status == 'on_time'" decoration-danger="return_sla_status == 'delayed'"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- â”€â”€ Main Form Groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+                    <group>
+                        <group string="Official KYC &amp; Verification">
+                            <field name="partner_id"/>
+                            <field name="category_id"/>
+                            <field name="company_id" groups="base.group_multi_company"/>
+                            <field name="renter_id_card" widget="image" class="oe_avatar" 
+                                   options="{'size': [120, 120]}"
+                                   invisible="skip_id_check"/>
+                            <field name="id_attachment_name" invisible="1"/>
+                            <field name="skip_id_check" widget="boolean_toggle"/>
+                            
+                            <separator string="Operators &amp; Staff"/>
+                            <field name="is_operators" widget="boolean_toggle" readonly="state != 'draft'"/>
+                            <field name="operator_count" invisible="not is_operators" readonly="state != 'draft'"/>
+                        </group>
+                        <group string="Operational Tracking (QMS)">
+                            <div class="d-flex flex-wrap w-100 mb-2">
+                                <div class="flex-grow-1" style="min-width: 140px; padding-right: 15px; border-right: 1px solid #dee2e6;">
+                                    <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 10px;">ðŸ¦ Deposit Received</div>
+                                    <div invisible="not deposit_payment_date">
+                                        <div class="text-success fw-bold" style="font-size: 14px; white-space: nowrap;">
+                                            <i class="fa fa-calendar me-1" title="Payment Date"/> <field name="deposit_payment_date" readonly="1" options="{'format': 'MMM d, h:mm a'}"/>
+                                        </div>
+                                    </div>
+                                    <div invisible="deposit_payment_date" class="text-muted o_italic opacity-75" style="font-size: 13px;">Pending...</div>
+                                </div>
+                                <div class="flex-grow-1 ps-3" style="min-width: 140px;">
+                                    <div class="text-muted small fw-bold text-uppercase mb-1" style="font-size: 10px;">ðŸ”„ Deposit Refunded</div>
+                                    <div invisible="not deposit_refund_date">
+                                        <div class="text-info fw-bold" style="font-size: 14px; white-space: nowrap;">
+                                            <i class="fa fa-calendar me-1" title="Refund Date"/> <field name="deposit_refund_date" readonly="1" options="{'format': 'MMM d, h:mm a'}"/>
+                                        </div>
+                                    </div>
+                                    <div invisible="deposit_refund_date" class="text-muted o_italic opacity-75" style="font-size: 13px;">Active</div>
+                                </div>
+                            </div>
+                            
+                            <separator string="SLA Benchmarks" class="mt-3"/>
+                            <label for="pickup_actual_date" string="Pickup (Real vs Deadline)"/>
+                            <div class="o_row mb-1">
+                                <field name="pickup_actual_date" placeholder="Awaiting handover..."/>
+                                <span class="mx-2 text-muted">|</span>
+                                <field name="pickup_deadline" decoration-info="1" style="font-weight: 500;"/>
+                            </div>
+                            
+                            <label for="return_actual_date" string="Return (Real vs Deadline)"/>
+                            <div class="o_row">
+                                <field name="return_actual_date" placeholder="Awaiting return..."/>
+                                <span class="mx-2 text-muted">|</span>
+                                <field name="return_deadline" decoration-item-primary="1" style="font-weight: 500;"/>
+                            </div>
+                            <field name="overtime_hours" readonly="1" invisible="overtime_hours == 0" decoration-danger="1" widget="float_time" string="Contract Late Hours"/>
+                        </group>
+                    </group>
+
+                    <!-- â”€â”€ Notebook Tabs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+                    <notebook>
+                        <page string="Equipment Lines">
+                            <div class="oe_right mb-2">
+                                <button name="action_organize_by_category" 
+                                        string="Regroup by Category" 
+                                        type="object" 
+                                        class="btn-secondary btn-sm" 
+                                        help="Automatically insert section headers for each product category."/>
+                                <button name="action_sync_line_dates" 
+                                        string="Sync All Dates" 
+                                        type="object" 
+                                        class="btn-outline-primary btn-sm ms-2" 
+                                        help="Roadmap #10: Synchronize all lines with header Pickup/Return dates."
+                                        invisible="state not in ('draft', 'approved')"/>
+                            </div>
+                            <group>
+                                <field name="line_ids" nolabel="1" colspan="2" widget="section_and_note_one2many">
+                                    <list editable="bottom" default_order="sequence">
+                                        <field name="display_type" column_invisible="True"/>
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="product_id" widget="many2one" string="Product"
+                                               required="not display_type"
+                                               domain="[('type', '!=', 'service')]"/>
+                                        <field name="lot_id" widget="many2one" string="Serial Number"
+                                               domain="[('product_id', '=', product_id)]" 
+                                               invisible="display_type"
+                                               placeholder="Manual Pick S/N..."/>
+                                        <field name="name" string="Description" widget="section_and_note_text"/>
+                                        <field name="quantity" string="Qty" invisible="display_type" readonly="product_type == 'service'"/>
+                                        <field name="product_type" column_invisible="1"/>
+                                        <field name="available_qty" string="Available" decoration-muted="1" invisible="display_type"/>
+                                        <field name="qty_delivered" string="Delivered" decoration-info="1" invisible="display_type"/>
+                                        <field name="qty_returned" string="Returned" invisible="display_type"/>
+                                        <field name="rental_state" widget="badge"
+                                               decoration-success="rental_state == 'booked'"
+                                               decoration-warning="rental_state == 'picked_up'"
+                                               decoration-muted="rental_state == 'returned'"
+                                               invisible="display_type"/>
+                                        <field name="price_unit" string="Unit Price" invisible="display_type" groups="atk_equipment_rental.group_equipment_rental_manager,atk_equipment_rental.group_equipment_rental_finance"/>
+                                        <field name="discount" string="Disc.%" invisible="display_type" groups="atk_equipment_rental.group_equipment_rental_manager,atk_equipment_rental.group_equipment_rental_finance"/>
+                                        <field name="price_subtotal" string="Amount" groups="atk_equipment_rental.group_equipment_rental_manager,atk_equipment_rental.group_equipment_rental_finance"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group class="oe_subtotal_footer oe_right" colspan="2">
+                                <field name="total_amount"/>
+                                <field name="amount_paid"/>
+                                <field name="amount_due" class="oe_subtotal_footer_separator"/>
+                            </group>
+                        </page>
+
+                        <page string="Dispatch QC Check" name="dispatch_qc"
+                              invisible="state not in ('approved', 'on_rent', 'return_inspection', 'closed')">
+                            <group>
+                                <field name="dispatch_qc_line_ids" nolabel="1">
+                                    <list editable="bottom" create="0" delete="0" 
+                                          decoration-success="is_checked == True" 
+                                          decoration-danger="is_checked == False">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name" readonly="1"/>
+                                        <field name="is_checked" widget="boolean_toggle"/>
+                                        <field name="check_date" readonly="1" optional="show"/>
+                                        <field name="check_user_id" readonly="1" optional="show"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="dispatch_notes" placeholder="Enter findings, serial numbers, conditions..."/>
+                            </group>
+                        </page>
+
+                        <page string="Logistics &amp; Overtime Tracking" name="logistics_tab">
+                            <field name="line_ids" readonly="1">
+                                <list>
+                                    <field name="display_type" column_invisible="True"/>
+                                    <field name="product_id" readonly="1" invisible="display_type"/>
+                                    <field name="lot_id" readonly="1" invisible="display_type"/>
+                                    <field name="quantity" string="Booked" widget="float" readonly="1" invisible="display_type"/>
+                                    <field name="qty_delivered" string="Pickup (In)" decoration-info="1" readonly="1" invisible="display_type"/>
+                                    <field name="qty_returned" string="Return (Out)" decoration-success="1" readonly="1" invisible="display_type"/>
+                                    <field name="overtime_hours" widget="float_time" decoration-danger="overtime_hours > 0" readonly="1" invisible="display_type"/>
+                                    <field name="price_unit" readonly="1" optional="hide" invisible="display_type"/>
+                                    <field name="discount" readonly="1" optional="hide" invisible="display_type"/>
+                                    <field name="price_subtotal" readonly="1" optional="hide" invisible="display_type"/>
+                                </list>
+                            </field>
+                        </page>
+
+                        <page string="Return QC Check" name="return_qc"
+                               invisible="state not in ('on_rent', 'return_inspection', 'closed')">
+                            <group>
+                                <field name="return_qc_line_ids" nolabel="1">
+                                    <list editable="bottom" create="0" delete="0">
+                                        <field name="sequence" widget="handle"/>
+                                        <field name="name" readonly="1"/>
+                                        <field name="is_checked" widget="boolean_toggle"/>
+                                        <field name="check_date" readonly="1"/>
+                                        <field name="check_user_id" readonly="1"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group>
+                                <field name="return_notes" placeholder="Record damages, extra charges, meter readings..."/>
+                            </group>
+                        </page>
+
+                        <page string="Order Expenses (Internal)" name="internal_expenses" invisible="not has_extra_costs">
+                            <group>
+                                <field name="expense_line_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="product_id" string="Staff/Resource"/>
+                                        <field name="name"/>
+                                        <field name="qty" string="Qty/Days"/>
+                                        <field name="amount" sum="Total Cost" string="Direct Cost"/>
+                                        <field name="notes" optional="hide"/>
+                                    </list>
+                                </field>
+                            </group>
+                            <group class="oe_subtotal_footer oe_right">
+                                <field name="total_internal_cost" string="Total Internal Cost"/>
+                            </group>
+                        </page>
+
+                        <page string="Policies &amp; Internal" name="policies_tab">
+                            <group>
+                                <group string="Contract Specific Fees (Overridden from Global)">
+                                    <field name="overtime_fee_per_hr" string="Custom Equipment Late Fee/HR"/>
+                                    <field name="operator_overtime_fee_per_hr" string="Custom Operator Late Fee/HR" invisible="not is_operators"/>
+                                </group>
+                                <group string="Institutional Parameters">
+                                    <field name="deposit_amount" string="Contract Deposit"/>
+                                    <field name="pickup_deadline" readonly="1"/>
+                                    <field name="return_deadline" readonly="1"/>
+                                </group>
+                            </group>
+                            <group string="Cost Control" groups="atk_equipment_rental.group_equipment_rental_manager">
+                                <field name="has_extra_costs" widget="boolean_toggle" string="Track Internal MIS Costs"/>
+                                <field name="expense_line_ids" nolabel="1">
+                                    <list editable="bottom">
+                                        <field name="product_id"/>
+                                        <field name="name"/>
+                                        <field name="qty"/>
+                                        <field name="amount" sum="Total Cost"/>
+                                    </list>
+                                </field>
+                            </group>
+                        </page>
+                        <page string="Terms &amp; Conditions" name="terms_and_conditions">
+                            <group>
+                                <field name="terms_id" options="{'no_create': True}"/>
+                            </group>
+                            <separator string="Editable Terms"/>
+                            <field name="rental_terms" placeholder="Apply a template or write specific terms here..."/>
+                        </page>
+                    </notebook>
+                </sheet>
+
+                <div class="oe_chatter">
+                    <field name="message_follower_ids"/>
+                    <field name="activity_ids"/>
+                    <field name="invoice_id" invisible="1"/>
+                    <field name="deposit_invoice_id" invisible="1"/>
+                    <field name="message_ids"/>
+                </div>
+            </form>
+        </field>
+    </record>
+
+    <!-- â”€â”€ ANALYTICS VIEWS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <record id="equipment_rental_view_pivot" model="ir.ui.view">
+        <field name="name">equipment.rental.pivot</field>
+        <field name="model">equipment.rental</field>
+        <field name="arch" type="xml">
+            <pivot string="Rental Analytics" sample="1">
+                <field name="partner_id" type="row"/>
+                <field name="start_date" interval="month" type="col"/>
+                <field name="total_amount" type="measure"/>
+                <field name="total_internal_cost" type="measure"/>
+                <field name="net_profit" type="measure"/>
+            </pivot>
+        </field>
+    </record>
+
+    <record id="equipment_rental_view_graph" model="ir.ui.view">
+        <field name="name">equipment.rental.graph</field>
+        <field name="model">equipment.rental</field>
+        <field name="arch" type="xml">
+            <graph string="Rental Trends" type="line" sample="1">
+                <field name="start_date" interval="day" type="row"/>
+                <field name="net_profit" type="measure"/>
+            </graph>
+        </field>
+    </record>
+
+    <record id="equipment_rental_view_calendar" model="ir.ui.view">
+        <field name="name">equipment.rental.calendar</field>
+        <field name="model">equipment.rental</field>
+        <field name="arch" type="xml">
+            <calendar string="Rental Schedule" 
+                      date_start="start_date" 
+                      date_stop="end_date" 
+                      color="state" 
+                      mode="month" 
+                      quick_create="0">
+                <field name="partner_id" avatar_field="image_128"/>
+                <field name="total_amount" widget="monetary"/>
+                <field name="state" filters="1"/>
+            </calendar>
+        </field>
+    </record>
+
+</odoo>

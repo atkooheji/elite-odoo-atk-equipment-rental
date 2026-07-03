@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- â”€â”€ Terms & Conditions Views â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
+    <record id="equipment_rental_terms_view_list" model="ir.ui.view">
+        <field name="name">equipment.rental.terms.list</field>
+        <field name="model">equipment.rental.terms</field>
+        <field name="arch" type="xml">
+            <list editable="bottom">
+                <field name="name"/>
+                <field name="active" widget="boolean_toggle"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="equipment_rental_terms_view_form" model="ir.ui.view">
+        <field name="name">equipment.rental.terms.form</field>
+        <field name="model">equipment.rental.terms</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name"/>
+                    </group>
+                    <separator string="Terms &amp; Conditions Content"/>
+                    <field name="content" widget="html"/>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_equipment_rental_terms" model="ir.actions.act_window">
+        <field name="name">Terms &amp; Conditions Templates</field>
+        <field name="res_model">equipment.rental.terms</field>
+        <field name="view_mode">list,form</field>
+        <field name="help" type="html">
+            <p class="o_view_nocontent_smiling_face">
+                Create your first Terms &amp; Conditions template!
+            </p>
+        </field>
+    </record>
+
+    <menuitem id="menu_equipment_rental_terms"
+              name="Terms &amp; Conditions Templates"
+              parent="atk_equipment_config_menu"
+              action="action_equipment_rental_terms"
+              sequence="20"/>
+</odoo>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo noupdate="1">
+        <record id="email_template_rental_review_request" model="mail.template">
+            <field name="name">Rental: Customer Review Request (nl3ab 26)</field>
+            <field name="model_id" ref="atk_equipment_rental.model_equipment_rental"/>
+            <field name="subject">How was your session with WANNA PLAY? (Order {{ object.name }})</field>
+            <field name="email_from">{{ (object.company_id.email_formatted or user.email_formatted) }}</field>
+            <field name="partner_to">{{ object.partner_id.id }}</field>
+            <field name="description">Sent automatically after equipment return to capture QMS satisfaction metrics.</field>
+            <field name="body_html" type="html">
+                <div style="margin: 0px; padding: 0px; background-color: #0d0d0d; color: #ffffff; font-family: 'Outfit', sans-serif;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color: #0d0d0d; min-width: 100%; height: 100%;">
+                        <tr>
+                            <td align="center">
+                                <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color: #1a1a1a; border-radius: 24px; padding: 40px; margin-top: 40px; border: 1px solid #333333;">
+                                    <tr>
+                                        <td align="center">
+                                            <h1 style="color: #00d2ff; font-size: 32px; font-weight: 800; letter-spacing: -1px; margin-bottom: 10px;">WANNA PLAY?</h1>
+                                            <p style="color: #888888; font-size: 14px; text-transform: uppercase; letter-spacing: 2px;">Strategic Service Review</p>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding-top: 40px; color: #eeeeee; font-size: 18px; line-height: 1.6;">
+                                            Hello <t t-out="object.partner_id.name"/>,<br/><br/>
+                                            Your session with order <b><t t-out="object.name"/></b> has been successfully concluded and settled in our audit trail.<br/><br/>
+                                            At WANNA PLAY, we strive for **elite operational excellence**. Your feedback is the primary driver of our continuous improvement cycle (QMS ISO 9001).
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td align="center" style="padding-top: 40px; padding-bottom: 40px;">
+                                            <a t-attf-href="{{ object.get_base_url() }}/rental/review/{{ object.id }}/{{ object.portal_token }}" 
+                                               style="background-color: #5e43fb; color: #ffffff; padding: 20px 40px; border-radius: 12px; font-weight: 700; text-decoration: none; display: inline-block; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 10px 20px rgba(94, 67, 251, 0.3);">
+                                                Rate Your Experience
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="color: #666666; font-size: 12px; text-align: center; padding-top: 20px; border-top: 1px solid #333333;">
+                                            Reference: <t t-out="object.name"/><br/>
+                                            Company ID: 26 â€” WANT PLAY ENTERTAINMENT
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </field>
+            <field name="lang">{{ object.partner_id.lang }}</field>
+            <field name="auto_delete" eval="True"/>
+        </record>
+</odoo>

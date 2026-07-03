@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <!-- 
+        Institutional Strategic Command: Force Signup Enablement.
+        This updates the configuration parameters to 'b2c' (Free Sign Up)
+        to ensure the 'Don't have an account?' link shows on the website.
+    -->
+    <!-- 
+        Institutional Strategic Command: Force Signup Enablement.
+        This updates the configuration parameters to 'b2c' (Free Sign Up)
+        to ensure the 'Don't have an account?' link shows on the website.
+    -->
+    <record id="auth_signup_uninvited_b2c" model="ir.config_parameter">
+        <field name="key">auth_signup.invitation_scope</field>
+        <field name="value">b2c</field>
+    </record>
+
+    <record id="auth_signup_scope_legacy" model="ir.config_parameter">
+        <field name="key">auth_signup_uninvited</field>
+        <field name="value">b2c</field>
+    </record>
+
+    <record id="website_auth_signup_uninvited_b2c" model="ir.config_parameter">
+        <field name="key">website.auth_signup_uninvited</field>
+        <field name="value">b2c</field>
+    </record>
+
+
+
+</odoo>

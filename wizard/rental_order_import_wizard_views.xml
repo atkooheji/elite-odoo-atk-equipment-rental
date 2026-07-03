@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="view_rental_order_import_wizard_form" model="ir.ui.view">
+        <field name="name">rental.order.import.wizard.form</field>
+        <field name="model">rental.order.import.wizard</field>
+        <field name="arch" type="xml">
+            <form string="AI Rental Order Scanner">
+                <div class="alert alert-info" role="alert">
+                    <i class="fa fa-info-circle me-2"/>
+                    <b>Precision Scan:</b> Upload a photo of the handwritten order. Our AI will automatically identify the customer, dates, products, and financials.
+                </div>
+                <group>
+                    <group>
+                        <field name="import_file" widget="image" options="{'size': [300, 400]}"/>
+                        <field name="file_name" invisible="1"/>
+                    </group>
+                    <group>
+                        <p class="text-muted">
+                            Ensure the photo is taken in good lighting and text is legible. 
+                            Supported formats: JPG, PNG.
+                        </p>
+                    </group>
+                </group>
+                <notebook invisible="not ai_raw_response">
+                    <page string="AI Analysis" name="ai_analysis">
+                        <field name="ai_raw_response" widget="ace" options="{'mode': 'json'}"/>
+                    </page>
+                </notebook>
+                <footer>
+                    <button name="action_import_ai" string="Start AI Scan" type="object" class="btn-primary" icon="fa-magic"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_rental_order_import_wizard" model="ir.actions.act_window">
+        <field name="name">AI Rental Order Scanner</field>
+        <field name="res_model">rental.order.import.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+</odoo>

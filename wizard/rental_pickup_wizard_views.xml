@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="equipment_rental_pickup_wizard_form" model="ir.ui.view">
+        <field name="name">equipment.rental.pickup.wizard.form</field>
+        <field name="model">equipment.rental.pickup.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Validate a pickup">
+                <field name="rental_id" invisible="1"/>
+                <field name="line_ids">
+                    <list editable="bottom" create="0" delete="0">
+                        <field name="rental_line_id" invisible="1"/>
+                        <field name="product_id" readonly="1"/>
+                        <field name="qty_reserved" readonly="1" force_save="1"/>
+                        <field name="qty_picked_up"/>
+                    </list>
+                </field>
+                <footer>
+                    <button string="Validate" type="object" name="action_validate" class="btn-primary"/>
+                    <button string="Cancel" class="btn-secondary" special="cancel"/>
+                </footer>
+            </form>
+        </field>
+    </record>
+</odoo>

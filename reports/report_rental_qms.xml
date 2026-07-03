@@ -1,0 +1,137 @@
+<odoo>
+    <record id="action_report_rental_qms" model="ir.actions.report">
+        <field name="name">QMS Rental Docket</field>
+        <field name="model">equipment.rental</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atk_equipment_rental.report_rental_qms_template</field>
+        <field name="report_file">atk_equipment_rental.report_rental_qms_template</field>
+        <field name="print_report_name">'QMS_Docket_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_equipment_rental"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_rental_qms_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Inter', sans-serif;">
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h2 style="color: #0d6efd;">RENTAL QMS DOCKET</h2>
+                                <h4 t-field="o.name"/>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="badge rounded-pill bg-success p-2" style="font-size: 14px;">QMS CERTIFIED âœ…</div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4 mb-4">
+                            <div class="col-6">
+                                <strong>Customer:</strong><br/>
+                                <span t-field="o.partner_id.name"/><br/>
+                                <span t-field="o.partner_id.street"/><br/>
+                                <span t-field="o.partner_id.city"/>, <span t-field="o.partner_id.country_id.name"/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Schedule:</strong><br/>
+                                ðŸ“¦ Pickup: <span t-field="o.start_date" t-options='{"widget": "datetime"}'/><br/>
+                                ðŸ” Return: <span t-field="o.end_date" t-options='{"widget": "datetime"}'/>
+                            </div>
+                        </div>
+
+                        <table class="table table-sm mt-4">
+                            <thead style="background-color: #f8f9fa; border-top: 2px solid #0d6efd;">
+                                <tr>
+                                    <th style="width: 40%;">Asset Description</th>
+                                    <th style="width: 20%;" class="text-center">Logistics (OUT/IN)</th>
+                                    <th style="width: 15%;" class="text-center">Fuel %</th>
+                                    <th style="width: 10%;" class="text-end">Qty</th>
+                                    <th style="width: 15%;" class="text-center">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.line_ids" t-as="line">
+                                    <tr t-if="not line.display_type and line.product_id.type != 'service'">
+                                        <td style="padding: 10px 5px; vertical-align: top;">
+                                            <div style="font-weight: 700; color: #333;"><span t-field="line.product_id.name"/></div>
+                                            <div style="font-size: 10px; color: #666; margin-top: 3px;">
+                                                <i class="fa fa-barcode me-1"/> SN: 
+                                                <t t-if="line.lot_ids">
+                                                    <t t-foreach="line.lot_ids" t-as="lot"><span t-esc="lot.name"/>, </t>
+                                                </t>
+                                                <t t-else="">
+                                                    <span class="text-muted italic">Awaiting Assignment</span>
+                                                </t>
+                                            </div>
+                                        </td>
+                                        <td class="text-center" style="font-size: 10px; border-left: 1px solid #eee; vertical-align: middle;">
+                                            <div class="text-primary font-weight-bold">ðŸ“¤ <span t-field="line.warehouse_id.name"/></div>
+                                            <div class="text-success font-weight-bold">ðŸ“¥ <span t-field="line.return_warehouse_id.name"/></div>
+                                        </td>
+                                        <td class="text-center" style="font-size: 11px; border-left: 1px solid #eee; vertical-align: middle;">
+                                            <div class="badge rounded-pill bg-light text-dark border">
+                                                <span t-field="line.fuel_pickup"/>% â›½
+                                            </div>
+                                            <t t-if="line.fuel_return">
+                                                <div class="mt-1" style="font-size: 10px; color: #198754;">
+                                                    â†’ <span t-field="line.fuel_return"/>%
+                                                </div>
+                                            </t>
+                                        </td>
+                                        <td class="text-end" style="padding: 10px 5px; border-left: 1px solid #eee; vertical-align: middle; font-weight: 600;">
+                                            <span t-field="line.quantity"/>
+                                        </td>
+                                        <td class="text-center" style="padding: 10px 5px; border-left: 1px solid #eee; vertical-align: middle;">
+                                            <span t-if="line.qty_delivered &gt;= line.quantity" class="badge bg-success" style="font-weight: 700;">COMPLETE</span>
+                                            <span t-else="" class="badge bg-warning text-dark" style="font-weight: 700;">PARTIAL</span>
+                                        </td>
+                                    </tr>
+                                    <tr t-if="line.display_type == 'line_section'">
+                                        <td colspan="5" style="background-color: #f1f3f5; font-weight: 800; text-transform: uppercase; font-size: 11px; color: #495057; padding: 8px;">
+                                            <span t-field="line.name"/>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-5">
+                            <div class="col-12">
+                                <h5 style="border-bottom: 2px solid #dee2e6; padding-bottom: 5px; color: #495057;">QUALITY CONTROL CHECKLIST (QMS)</h5>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-6" style="border-right: 1px dotted #dee2e6;">
+                                <h6 style="text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #0d6efd; margin-top: 10px;">ðŸ“¤ Dispatch / Handover</h6>
+                                <t t-foreach="o.dispatch_qc_line_ids" t-as="qc">
+                                    <div class="mb-2" style="font-size: 13px;">
+                                        [ <span t-if="qc.is_checked" style="color: #0d6efd; font-weight: 700;">X</span><span t-else="" style="color: #dee2e6;">_</span> ] <span t-field="qc.name"/>
+                                    </div>
+                                </t>
+                            </div>
+                            <div class="col-6 ps-4">
+                                <h6 style="text-transform: uppercase; font-size: 11px; letter-spacing: 1px; color: #198754; margin-top: 10px;">ðŸ“¥ Return / Inspection</h6>
+                                <t t-foreach="o.return_qc_line_ids" t-as="qc">
+                                    <div class="mb-2" style="font-size: 13px;">
+                                        [ <span t-if="qc.is_checked" style="color: #198754; font-weight: 700;">X</span><span t-else="" style="color: #dee2e6;">_</span> ] <span t-field="qc.name"/>
+                                    </div>
+                                </t>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5" style="border-top: 1px solid #dee2e6; padding-top: 20px;">
+                            <div class="col-6">
+                                <strong>Dispatch Official:</strong><br/><br/>
+                                _______________________
+                            </div>
+                            <div class="col-6 text-end">
+                                <strong>Customer Acknowledgement:</strong><br/><br/>
+                                _______________________
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

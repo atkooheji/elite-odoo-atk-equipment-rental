@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_equipment_rental_dashboard" model="ir.actions.client">
+        <field name="name">Rental Command Center</field>
+        <field name="tag">atk_equipment_rental.Dashboard</field>
+    </record>
+</odoo>

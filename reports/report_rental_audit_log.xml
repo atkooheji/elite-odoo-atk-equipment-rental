@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_rental_audit_log" model="ir.actions.report">
+        <field name="name">QMS Compliance Audit Log</field>
+        <field name="model">equipment.rental</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atk_equipment_rental.report_rental_audit_template</field>
+        <field name="report_file">atk_equipment_rental.report_rental_audit_template</field>
+        <field name="print_report_name">'QMS_Audit_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_equipment_rental"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_rental_audit_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Inter', sans-serif;">
+                        <div class="row mb-5">
+                            <div class="col-8">
+                                <h2 style="color: #6c757d; font-weight: 800;">QMS COMPLIANCE AUDIT LOG</h2>
+                                <h4 class="text-muted" t-field="o.name"/>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div style="font-size: 13px; color: #666;">
+                                    <strong>Audit Date:</strong> <span t-esc="datetime.datetime.now().strftime('%Y-%m-%d')"/><br/>
+                                    <strong>Status:</strong> <span t-field="o.state"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="card p-3 mb-4 bg-light">
+                            <div class="row">
+                                <div class="col-6">
+                                    <strong>Renter:</strong> <span t-field="o.partner_id.name"/><br/>
+                                    <strong>Pickup Schedule:</strong> <span t-field="o.start_date"/><br/>
+                                    <strong>Return Schedule:</strong> <span t-field="o.end_date"/>
+                                </div>
+                                <div class="col-6 text-end">
+                                    <strong>Dispatch SLA:</strong> <span t-field="o.pickup_sla_status" widget="badge"/><br/>
+                                    <strong>Return SLA:</strong> <span t-field="o.return_sla_status" widget="badge"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 class="mt-5 mb-3" style="border-bottom: 2px solid #6c757d; padding-bottom: 5px;">QC CHECKPOINT TRACEABILITY</h5>
+                        <table class="table table-sm">
+                            <thead style="background-color: #f8f9fa;">
+                                <tr>
+                                    <th>Phase</th>
+                                    <th>Checklist Item</th>
+                                    <th class="text-center">Status</th>
+                                    <th>Timestamp</th>
+                                    <th>Inspector</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Dispatch Phase -->
+                                <t t-foreach="o.dispatch_qc_line_ids" t-as="qc">
+                                    <tr>
+                                        <td><span class="badge bg-primary">Dispatch</span></td>
+                                        <td><span t-field="qc.name"/></td>
+                                        <td class="text-center">
+                                            <span t-if="qc.is_checked" style="color: #198754; font-weight: bold;">PASSED âœ…</span>
+                                            <span t-else="" style="color: #dc3545; font-weight: bold;">PENDING â³</span>
+                                        </td>
+                                        <td><span t-field="qc.check_date" t-options='{"widget": "datetime"}'/></td>
+                                        <td><span t-field="qc.check_user_id.name"/></td>
+                                    </tr>
+                                </t>
+                                <!-- Return Phase -->
+                                <t t-foreach="o.return_qc_line_ids" t-as="qc">
+                                    <tr>
+                                        <td><span class="badge bg-success">Return</span></td>
+                                        <td><span t-field="qc.name"/></td>
+                                        <td class="text-center">
+                                            <span t-if="qc.is_checked" style="color: #198754; font-weight: bold;">PASSED âœ…</span>
+                                            <span t-else="" style="color: #dc3545; font-weight: bold;">PENDING â³</span>
+                                        </td>
+                                        <td><span t-field="qc.check_date" t-options='{"widget": "datetime"}'/></td>
+                                        <td><span t-field="qc.check_user_id.name"/></td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                        
+                        <div class="row mt-5 card p-3 shadow-sm border-0 bg-light" t-if="o.dispatch_notes or o.return_notes">
+                            <div class="col-12">
+                                <strong>Management Observations:</strong>
+                                <div class="mt-2 text-muted" style="font-size: 13px;">
+                                    <p t-if="o.dispatch_notes"><strong>Dispatch:</strong> <span t-field="o.dispatch_notes"/></p>
+                                    <p t-if="o.return_notes"><strong>Return:</strong> <span t-field="o.return_notes"/></p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ROADMAP #30: Strategic Executive Audit Log -->
+                        <h5 class="mt-5 mb-3" style="border-bottom: 2px solid #000; padding-bottom: 5px; font-weight: 800;">STRATEGIC CHANGE LOG (EXECUTIVE AUDIT)</h5>
+                        <table class="table table-sm" style="font-size: 11px;">
+                            <thead style="background-color: #f0f0f0;">
+                                <tr>
+                                    <th style="width: 20%;">Timestamp</th>
+                                    <th>Operational Modification / Financial Shift</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.message_ids.filtered(lambda m: 'Audit Log' in (m.body or ''))" t-as="msg">
+                                    <tr>
+                                        <td><span t-field="msg.date" t-options='{"widget": "datetime"}'/></td>
+                                        <td><span t-out="msg.body"/></td>
+                                    </tr>
+                                </t>
+                                <t t-if="not o.message_ids.filtered(lambda m: 'Audit Log' in (m.body or ''))">
+                                    <tr>
+                                        <td colspan="2" class="text-center text-muted">No high-priority operational modifications logged.</td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-5 pt-5">
+                            <div class="col-12 text-center" style="font-size: 11px; color: #999;">
+                                *** End of Official QMS Audit Trail - System Generated ***
+                            </div>
+                        </div>
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

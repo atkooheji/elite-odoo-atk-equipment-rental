@@ -1,0 +1,121 @@
+<odoo>
+    <record id="action_report_rental_mis_profitability" model="ir.actions.report">
+        <field name="name">MIS Order Profitability</field>
+        <field name="model">equipment.rental</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atk_equipment_rental.report_rental_mis_profit_template</field>
+        <field name="report_file">atk_equipment_rental.report_rental_mis_profit_template</field>
+        <field name="print_report_name">'MIS_Profitability_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_equipment_rental"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_rental_mis_profit_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Inter', sans-serif;">
+                        <div class="row mb-4">
+                            <div class="col-8">
+                                <h2 style="color: #6610f2;">MIS ORDER PROFITABILITY REPORT</h2>
+                                <h4 t-field="o.name"/>
+                            </div>
+                            <div class="col-4 text-end">
+                                <div class="badge rounded-pill bg-dark p-2" style="font-size: 14px;">INTERNAL ONLY</div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4 mb-5 card p-4 shadow-sm" style="border: 1px solid #dee2e6;">
+                            <div class="col-12">
+                                <h5 class="text-primary mb-3">FINANCIAL SUMMARY (MANAGEMENT)</h5>
+                                <div class="row">
+                                    <div class="col-4 text-center border-end">
+                                        <div class="text-muted text-uppercase" style="font-size: 11px;">GROSS REVENUE</div>
+                                        <div class="h4"><span t-field="o.total_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></div>
+                                    </div>
+                                    <div class="col-4 text-center border-end">
+                                        <div class="text-muted text-uppercase" style="font-size: 11px;">INTERNAL COST</div>
+                                        <div class="h4"><span t-field="o.total_internal_cost" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></div>
+                                    </div>
+                                    <div class="col-4 text-center">
+                                        <div class="text-muted text-uppercase" style="font-size: 11px;">NET PROFIT</div>
+                                        <div class="h4 text-success"><span t-field="o.net_profit" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4">
+                            <div class="col-12">
+                                <h5 style="border-bottom: 2px solid #dee2e6; padding-bottom: 5px;">DETAILED REVENUE LINES</h5>
+                                <table class="table table-sm">
+                                    <thead class="bg-light">
+                                        <tr>
+                                            <th>Product / Service</th>
+                                            <th>Description</th>
+                                            <th class="text-end">Qty</th>
+                                            <th class="text-end">Unit Price</th>
+                                            <th class="text-end">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.line_ids" t-as="line">
+                                            <tr t-att-style="'background-color: #f3e5f5; font-weight: bold;' if line.display_type == 'line_section' else ''">
+                                                <t t-if="not line.display_type">
+                                                    <td><span t-field="line.product_id"/></td>
+                                                    <td><span t-field="line.name"/></td>
+                                                    <td class="text-end"><span t-field="line.quantity"/></td>
+                                                    <td class="text-end"><span t-field="line.price_unit" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                                    <td class="text-end"><span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                                </t>
+                                                <t t-if="line.display_type == 'line_section'">
+                                                    <td colspan="5" style="padding-top: 5px; padding-bottom: 5px;">
+                                                        <table style="width: 100%; border: none; padding: 0; margin: 0;">
+                                                            <tr>
+                                                                <td style="border: none; padding: 0; text-align: left;">
+                                                                    <span t-esc="line.name.split('\u00A0')[0]" style="font-weight: 800; text-transform: uppercase; white-space: nowrap;"/>
+                                                                </td>
+                                                                <td style="border: none; padding: 0; text-align: right; padding-right: 10pt;">
+                                                                    <span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}' style="font-weight: 800; white-space: nowrap;"/>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </t>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div class="row mt-4" t-if="o.expense_line_ids">
+                            <div class="col-12">
+                                <h5 style="border-bottom: 2px solid #dc3545; padding-bottom: 5px;">INTERNAL EXPENSES (LOGS)</h5>
+                                <table class="table table-sm border-danger">
+                                    <thead class="bg-danger text-white">
+                                        <tr>
+                                            <th>Description</th>
+                                            <th class="text-end">Date</th>
+                                            <th class="text-end">Cost</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <t t-foreach="o.expense_line_ids" t-as="exp">
+                                            <tr>
+                                                <td><span t-field="exp.name"/></td>
+                                                <td class="text-end"><span t-field="exp.date"/></td>
+                                                <td class="text-end"><span t-field="exp.amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                            </tr>
+                                        </t>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

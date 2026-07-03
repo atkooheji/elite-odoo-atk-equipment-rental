@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- Tactical Action Linkage -->
+    <menuitem id="atk_equipment_dashboard_menu"
+              name="Command Center"
+              action="action_equipment_rental_dashboard"
+              parent="atk_equipment_root_menu"
+              sequence="1"/>
+
+    <menuitem id="atk_equipment_rental_order_menu"
+              name="Rental Orders"
+              action="action_equipment_rental"
+              parent="atk_equipment_operations_menu"
+              sequence="1"/>
+
+    <!-- Catalog & Pricing -->
+    <menuitem id="atk_equipment_catalog_menu"
+              name="Catalog"
+              parent="atk_equipment_root_menu"
+              sequence="10"
+              groups="group_equipment_rental_user"/>
+
+    <menuitem id="atk_equipment_pricelist_menu"
+              name="Pricelists"
+              action="product.product_pricelist_action2"
+              parent="atk_equipment_catalog_menu"
+              sequence="1"/>
+
+    <menuitem id="atk_equipment_loyalty_menu"
+              name="Discount &amp; Loyalty"
+              action="loyalty.loyalty_program_discount_loyalty_action"
+              parent="atk_equipment_catalog_menu"
+              sequence="2"/>
+
+    <menuitem id="atk_equipment_gift_card_menu"
+              name="Gift cards &amp; eWallet"
+              action="loyalty.loyalty_program_gift_ewallet_action"
+              parent="atk_equipment_catalog_menu"
+              sequence="3"/>
+    
+    <menuitem id="atk_equipment_qc_template_menu"
+              name="QC Checklist Templates"
+              action="action_equipment_qc_template"
+              parent="atk_equipment_config_menu"
+              sequence="10"/>
+</odoo>

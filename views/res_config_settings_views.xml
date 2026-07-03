@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.equipment.rental</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="20"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app data-string="Equipment Rental" string="Equipment Rental" name="atk_equipment_rental" groups="base.group_system">
+                    <block title="Logistics &amp; Scheduling" name="logistics_scheduling">
+                        <setting id="rental_duration_setting" help="Default duration of a rental in hours">
+                            <field name="rental_duration_default" widget="float_time"/>
+                        </setting>
+                        <setting id="rental_prefix_setting" help="Enter the prefix for rental references (e.g., BH-RNT- for Bahrain branch)">
+                            <field name="rental_sequence_prefix"/>
+                        </setting>
+                    </block>
+                    <block title="Financial &amp; Fee Policies" name="financial_fee_policies">
+                        <setting id="deposit_amount_setting" help="Default security deposit required per contract">
+                            <field name="rental_deposit_amount"/>
+                        </setting>
+                        <setting id="equipment_overtime_setting" help="Late fee per hour for equipment">
+                            <field name="equipment_overtime_rate"/>
+                        </setting>
+                        <setting id="operator_overtime_setting" help="Late fee per hour for operators">
+                            <field name="operator_overtime_rate"/>
+                        </setting>
+                        <setting id="operator_product_name_setting" help="Name of the service product to search for as 'Operators'">
+                            <field name="operator_product_name"/>
+                        </setting>
+                    </block>
+                    <block title="Promotion Engine" name="promotion_engine">
+                        <setting id="promo_product_setting" help="Product given for free if threshold is met">
+                            <field name="promo_product_id"/>
+                        </setting>
+                        <setting id="promo_threshold_setting" help="Quantity required to trigger free bonus">
+                            <field name="promo_threshold_qty"/>
+                        </setting>
+                    </block>
+                    <block title="Operational Performance (SLA)" name="operational_sla">
+                        <setting id="pickup_sla_setting" help="How many hours after start date before pickup is 'Delayed'">
+                            <field name="pickup_sla_hours" widget="float_time"/>
+                        </setting>
+                        <setting id="return_sla_setting" help="How many hours after end date before return is 'Delayed'">
+                            <field name="return_sla_hours" widget="float_time"/>
+                        </setting>
+                        <setting id="skip_id_setting" help="Default behavior for KYC skip">
+                            <field name="skip_id_check"/>
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_equipment_rental_config_settings" model="ir.actions.act_window">
+        <field name="name">Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="context">{'module' : 'atk_equipment_rental', 'bin_size': False}</field>
+    </record>
+
+    <menuitem id="equipment_rental_menu_configuration"
+        name="Settings"
+        parent="atk_equipment_root_menu"
+        sequence="100"
+        action="action_equipment_rental_config_settings"
+        groups="base.group_system"/>
+</odoo>

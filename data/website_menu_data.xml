@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- 
+        Institutional Strategic Command: Website Menu Integration.
+        This provides a direct entry point for customers into the 
+        "Wanna Play?" booking portal on the main website.
+    -->
+    <!--
+    <delete id="menu_rental_booking" model="website.menu"/>
+    <delete id="menu_rentable_games" model="website.menu"/>
+    <delete id="menu_services_addons" model="website.menu"/>
+    -->
+</odoo>

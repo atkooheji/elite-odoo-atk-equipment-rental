@@ -1,0 +1,156 @@
+<odoo>
+    <record id="action_report_rental_quotation" model="ir.actions.report">
+        <field name="name">Rental Quotation</field>
+        <field name="model">equipment.rental</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atk_equipment_rental.report_rental_quotation_template</field>
+        <field name="report_file">atk_equipment_rental.report_rental_quotation_template</field>
+        <field name="print_report_name">'Quotation_%s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_equipment_rental"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <template id="report_rental_quotation_template">
+        <t t-call="web.html_container">
+            <t t-foreach="docs" t-as="o">
+                <t t-call="web.external_layout">
+                    <div class="page" style="font-family: 'Inter', sans-serif; color: #333;">
+                        <div class="row mb-5">
+                            <div class="col-7">
+                                <h2 style="color: #6a1b9a; font-weight: 800; letter-spacing: -1px;">RENTAL QUOTATION</h2>
+                                <h4 class="text-muted" t-field="o.name"/>
+                            </div>
+                            <div class="col-5 text-end">
+                                <div style="font-size: 13px; color: #666;">
+                                    <strong>Date:</strong> <span t-field="o.create_date" t-options='{"widget": "date"}'/><br/>
+                                    <strong>Validity:</strong> 7 Days from Issue
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mb-4" style="background-color: #f8f9fa; padding: 20px; border-radius: 12px;">
+                            <div class="col-6">
+                                <div style="font-size: 11px; font-weight: 800; color: #6a1b9a; text-transform: uppercase; margin-bottom: 5px;">Client Information</div>
+                                <strong style="font-size: 16px;" t-field="o.partner_id.name"/><br/>
+                                <span t-field="o.partner_id.street"/><br/>
+                                <span t-field="o.partner_id.city"/>, <span t-field="o.partner_id.country_id.name"/><br/>
+                                <i class="fa fa-phone me-1"/> <span t-field="o.partner_id.phone"/>
+                            </div>
+                            <div class="col-6 text-end">
+                                <div style="font-size: 11px; font-weight: 800; color: #6a1b9a; text-transform: uppercase; margin-bottom: 5px;">Rental Schedule</div>
+                                <div class="mb-1">
+                                    <span class="badge bg-light text-dark border p-1 px-2" style="font-size: 12px;">
+                                        ðŸ•’ Pickup: <span t-field="o.start_date" t-options='{"widget": "datetime", "format": "MMM d, HH:mm"}'/>
+                                    </span>
+                                </div>
+                                <div>
+                                    <span class="badge bg-light text-dark border p-1 px-2" style="font-size: 12px;">
+                                        âª Return: <span t-field="o.end_date" t-options='{"widget": "datetime", "format": "MMM d, HH:mm"}'/>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <h5 style="border-bottom: 2px solid #6a1b9a; padding-bottom: 8px; margin-bottom: 15px;">Equipment &amp; Professional Services</h5>
+                        <table class="table table-sm table-borderless">
+                            <thead style="border-bottom: 1px solid #dee2e6;">
+                                <tr style="color: #6a1b9a;">
+                                    <th style="width: 50%;">Description</th>
+                                    <th class="text-end">Quantity</th>
+                                    <th class="text-end">Daily Rate</th>
+                                    <th class="text-end">Total Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="o.line_ids" t-as="line">
+                                    <tr t-att-style="'background-color: #f3e5f5; font-weight: bold;' if line.display_type == 'line_section' else ''">
+                                        <t t-if="not line.display_type">
+                                            <td><span t-field="line.product_id.name"/></td>
+                                            <td class="text-end"><span t-field="line.quantity"/></td>
+                                            <td class="text-end"><span t-field="line.price_unit" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                            <td class="text-end"><span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                        </t>
+                                        <t t-if="line.display_type == 'line_section'">
+                                            <td colspan="4" style="padding-top: 10px; padding-bottom: 10px;">
+                                                <table style="width: 100%; border: none; padding: 0; margin: 0;">
+                                                    <tr>
+                                                        <td style="border: none; padding: 0; text-align: left;">
+                                                            <span t-esc="line.name.split('\u00A0')[0]" style="font-weight: 800; text-transform: uppercase; white-space: nowrap;"/>
+                                                        </td>
+                                                        <td style="border: none; padding: 0; text-align: right; padding-right: 10pt;">
+                                                            <span t-field="line.price_subtotal" t-options='{"widget": "monetary", "display_currency": o.currency_id}' style="font-weight: 800; white-space: nowrap;"/>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </t>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+
+                        <div class="row mt-4">
+                            <div class="col-8">
+                                <div style="background-color: #fff8e1; padding: 15px; border-left: 5px solid #ffc107; font-size: 12px;">
+                                    <strong>Terms &amp; Conditions:</strong><br/>
+                                    1. A security deposit of <strong t-field="o.deposit_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/> is mandatory.<br/>
+                                    2. Late returns are charged at <strong t-field="o.overtime_fee_per_hr"/> BD per hour.<br/>
+                                    3. Equipment must be returned in the same condition as received.
+                                </div>
+                            </div>
+                            <div class="col-4">
+                                <table class="table table-sm text-end table-borderless">
+                                    <tr>
+                                        <td><strong>Rental Total:</strong></td>
+                                        <td><strong><span t-field="o.total_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></strong></td>
+                                    </tr>
+                                    <tr style="border-top: 1px solid #dee2e6;">
+                                        <td><span class="text-muted">Security Deposit:</span></td>
+                                        <td><span class="text-muted" t-field="o.deposit_amount" t-options='{"widget": "monetary", "display_currency": o.currency_id}'/></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Terms & Conditions Section -->
+                        <div t-if="o.rental_terms" class="row mt-4" style="page-break-inside: avoid;">
+                            <div class="col-12">
+                                <h6 style="border-bottom: 2px solid #dee2e6; padding-bottom: 5px;">TERMS &amp; CONDITIONS</h6>
+                                <div style="font-size: 11px; color: #555;">
+                                    <span t-out="o.rental_terms"/>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row mt-5 pt-5 text-center" style="font-size: 13px;">
+                            <div class="col-4">
+                                <div style="border-top: 1px solid #ddd; padding-top: 10px;">Elite Sport Official</div>
+                            </div>
+                            <div class="col-4"></div>
+                            <div class="col-4">
+                                <div style="border-top: 1px solid #ddd; padding-top: 10px;">Client Signature</div>
+                            </div>
+                        </div>
+                        
+                        <!-- ROADMAP #58: Strategic Banking Localization -->
+                        <div class="row mt-4" style="font-size: 10px; color: #666; border-top: 1px solid #eee; padding-top: 10px;">
+                            <div class="col-12 text-center">
+                                <t t-if="o.currency_id.name == 'BHD'">
+                                    ðŸ¦ <strong>Local Banking (BHD):</strong> BisB Account: 123-456-789 | IBAN: BH1234567890 | SWIFT: BISBXXXX
+                                </t>
+                                <t t-elif="o.currency_id.name == 'AED'">
+                                    ðŸ¦ <strong>Regional Banking (AED):</strong> ENBD UAE | IBAN: AE0987654321000 | SWIFT: ENBDXXXX
+                                </t>
+                                <t t-else="">
+                                    ðŸ¦ <strong>International Banking:</strong> Please contact finance@elitesportbh.com for wire instructions.
+                                </t>
+                            </div>
+                        </div>
+
+
+                    </div>
+                </t>
+            </t>
+        </t>
+    </template>
+</odoo>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="action_report_rental_qms" model="ir.actions.report">
+        <field name="name">QMS Delivery &amp; Pickup Docket</field>
+        <field name="model">equipment.rental</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atk_equipment_rental.report_rental_qms_template</field>
+        <field name="report_file">atk_equipment_rental.report_rental_qms_template</field>
+        <field name="print_report_name">'Rental Docket - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_equipment_rental"/>
+        <field name="binding_type">report</field>
+    </record>
+
+    <record id="action_report_rental_mis_profitability" model="ir.actions.report">
+        <field name="name">MIS Order Profitability Report</field>
+        <field name="model">equipment.rental</field>
+        <field name="report_type">qweb-pdf</field>
+        <field name="report_name">atk_equipment_rental.report_rental_mis_profit_template</field>
+        <field name="report_file">atk_equipment_rental.report_rental_mis_profit_template</field>
+        <field name="print_report_name">'Profitability Report - %s' % (object.name)</field>
+        <field name="binding_model_id" ref="model_equipment_rental"/>
+        <field name="binding_type">report</field>
+    </record>
+</odoo>

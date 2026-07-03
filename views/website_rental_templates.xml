@@ -1,0 +1,564 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="rental_booking_template" name="nl3ab 26 - Equipment Booking" active="False">
+        <t t-call="website.layout">
+            <style>
+                .material-symbols-outlined {
+                    font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+                }
+                .glass-card {
+                    background: rgba(255, 255, 255, 0.7);
+                    backdrop-filter: blur(16px);
+                    -webkit-backdrop-filter: blur(16px);
+                }
+                .arch-mask {
+                    border-radius: 999px 999px 2rem 2rem;
+                }
+                /* Lock Tailwind from hiding Odoo GUI */
+                .o_main_navbar { z-index: 10001 !important; }
+            </style>
+            <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+            <script id="tailwind-config">
+              tailwind.config = {
+                darkMode: "class",
+                corePlugins: { preflight: false },
+                theme: {
+                  extend: {
+                    colors: {
+                      "primary": "#784e83",
+                      "secondary": "#3b6564",
+                      "tertiary": "#755b00",
+                      "primary-container": "#93669d",
+                      "secondary-container": "#beebe9",
+                      "tertiary-container": "#ffe08f",
+                      "on-primary": "#ffffff",
+                      "on-secondary": "#ffffff",
+                      "on-tertiary": "#ffffff",
+                      "on-primary-container": "#ffffff",
+                      "on-secondary-container": "#416c6a",
+                      "on-tertiary-container": "#503d00",
+                      "background": "#fbf9f8",
+                      "surface": "#fbf9f8",
+                      "surface-container": "#efeded",
+                      "surface-container-low": "#f5f3f3",
+                      "surface-container-high": "#e9e8e7",
+                      "surface-container-highest": "#e4e2e2",
+                      "on-surface": "#1b1c1c",
+                      "on-surface-variant": "#4d444d",
+                      "outline": "#7e747e",
+                      "outline-variant": "#d0c3ce",
+                    },
+                    fontFamily: {
+                      "headline": ["Plus Jakarta Sans"],
+                      "body": ["Be Vietnam Pro"],
+                      "label": ["Plus Jakarta Sans"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                  },
+                },
+              }
+            </script>
+            <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Be_Vietnam_Pro:wght@300;400;500;600&amp;display=swap" rel="stylesheet"/>
+            <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+
+            <div id="wrap" class="bg-background text-on-background font-body selection:bg-primary-fixed selection:text-on-primary-fixed">
+                <main class="py-20 px-6 max-w-7xl mx-auto">
+                    <!-- Progress Tracker -->
+                    <div class="mb-12 flex items-center justify-center space-x-4">
+                        <div class="flex items-center space-x-2 text-primary font-bold">
+                            <span class="w-8 h-8 rounded-full bg-primary text-on-primary flex items-center justify-center text-sm font-bold shadow-lg shadow-primary/20">1</span>
+                            <span class="font-label text-sm">Scheduling</span>
+                        </div>
+                        <div class="h-px w-12 bg-outline-variant/30"/>
+                        <div class="flex items-center space-x-2 text-on-surface-variant/50">
+                            <span class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-sm font-bold">2</span>
+                            <span class="font-label text-sm font-semibold">Select Equipment</span>
+                        </div>
+                        <div class="h-px w-12 bg-outline-variant/30"/>
+                        <div class="flex items-center space-x-2 text-on-surface-variant opacity-30">
+                            <span class="w-8 h-8 rounded-full bg-surface-container-highest text-on-surface-variant flex items-center justify-center text-sm font-bold">3</span>
+                            <span class="font-label text-sm font-semibold">Verification</span>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start">
+                        <!-- Left Column: Image and Item Context -->
+                        <div class="lg:col-span-5 space-y-8">
+                            <div class="relative group">
+                                <div class="absolute -inset-4 bg-primary/5 rounded-xl blur-3xl group-hover:bg-primary/10 transition-all"/>
+                                <div class="relative arch-mask overflow-hidden aspect-[4/5] bg-surface-container-high shadow-xl shadow-on-surface/5">
+                                    <img alt="Professional pickleball equipment" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAsGMtusmFw4OHQK1Fijq3IIjKyflI3wvsJ_DbiOhVZ1ujpbw9xS2TsIJ6J5zVgjfJjvZRb7XorxC9oz2U26pMFWUO1-X8og48RfoIONvRrpOhiFegbXLnK05N4zl0ZNn3qzT3LnJ9aq1Rc0OcY-csbspXOo9x73tTteO3M0jwXgeEOhUmqWO9Julllu_j9H3fbkhQH1bosKtkDajTfd_PWXXRBzh4MGgxEVGVA8UISXnoAONyoGGPBZ6sxrWf4AmRX2Y_SrLEjbRs"/>
+                                </div>
+                            </div>
+                            <div class="space-y-4">
+                                <span class="px-3 py-1 bg-tertiary-container text-on-tertiary-container rounded-full text-xs font-bold font-label uppercase tracking-widest">Selected Item</span>
+                                <h1 class="text-4xl font-headline font-black text-on-surface tracking-tight leading-tight">Pro Series Pickleball Set</h1>
+                                <p class="text-on-surface-variant leading-relaxed font-light">Includes 4 carbon-fiber paddles, 12 pro-grade balls, and a portable net system for the ultimate Bahraini weekend matches.</p>
+                                <div class="flex items-center space-x-3 text-secondary font-semibold">
+                                    <span class="material-symbols-outlined">verified</span>
+                                    <span class="font-label">Available for these dates</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Column: The Date Picker Shell -->
+                        <div class="lg:col-span-7">
+                            <div class="glass-card rounded-lg p-8 shadow-2xl shadow-primary/5 border border-white/50">
+                                <div class="mb-10">
+                                    <h2 class="text-2xl font-headline font-bold text-on-surface">Choose Your Experience Window</h2>
+                                    <p class="text-on-surface-variant text-sm mt-2">Rentals are calculated in 24-hour blocks from your pickup time.</p>
+                                </div>
+
+                                <form action="/rental/catalog" method="GET" class="space-y-10 focus:outline-none" id="rental_scheduler">
+                                    <div class="grid grid-cols-1 md:grid-cols-1 gap-12 mb-10">
+                                        <!-- Step 1: Pickup Selector (Date & Time) -->
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <label class="block font-label text-xs font-bold uppercase tracking-widest text-primary">Start Your Experience</label>
+                                                <span class="text-[10px] text-gray-400 font-medium px-2 py-0.5 rounded-full border border-gray-100 uppercase tracking-tighter">Required</span>
+                                            </div>
+                                            <div class="bg-surface-container-low p-6 rounded-3xl border border-outline-variant/15 flex flex-col space-y-4 hover:border-primary/40 transition-all group shadow-sm">
+                                                <div class="flex items-center space-x-5">
+                                                    <div class="w-12 h-12 bg-primary/10 rounded-2xl flex items-center justify-center text-primary">
+                                                        <span class="material-symbols-outlined">schedule</span>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <p class="text-xs text-on-surface-variant font-bold uppercase tracking-widest mb-1 opacity-60">Pickup Date &amp; Time</p>
+                                                        <input type="datetime-local" id="pickup_datetime" name="start_date" class="w-full bg-transparent border-none p-0 text-2xl font-black font-headline focus:ring-0 text-on-surface" required="1" step="3600" t-att-min="datetime.datetime.now().strftime('%Y-%m-%dT%H:00')"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Step 2: Strategic Duration Controller (Hrs-Driven) -->
+                                        <div class="space-y-6">
+                                            <div class="flex items-center justify-between p-6 rounded-3xl bg-primary/5 border border-primary/10 transition-all hover:bg-primary/10 cursor-pointer" onclick="document.getElementById('want_more_time').click()">
+                                                <div class="flex items-center space-x-4">
+                                                    <div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center text-on-primary">
+                                                        <span id="extra_time_icon" class="material-symbols-outlined">add_circle</span>
+                                                    </div>
+                                                    <div>
+                                                        <p class="text-xs font-bold uppercase tracking-widest text-primary">Extend My Playtime</p>
+                                                        <p class="text-[11px] text-on-surface-variant italic opacity-80">Default window is <t t-esc="default_duration"/> hours.</p>
+                                                    </div>
+                                                </div>
+                                                <input type="checkbox" id="want_more_time" name="want_more_time" class="w-6 h-6 rounded-lg text-primary focus:ring-primary border-outline-variant transition-all" onclick="event.stopPropagation()"/>
+                                            </div>
+
+                                            <div id="extra_hours_container" class="hidden animate-fade-in space-y-3 px-2">
+                                                <div class="flex items-center justify-between">
+                                                    <span class="text-xs font-headline font-semibold text-on-surface-variant">Request Extra Hours</span>
+                                                    <div class="flex items-center space-x-3 bg-white p-2 rounded-full border border-outline-variant/30">
+                                                        <button type="button" onclick="decrementHours()" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-primary transition-colors border-none">-</button>
+                                                        <input type="number" id="extra_hours_input" name="duration_extra" value="0" min="0" class="w-12 text-center font-black border-none focus:ring-0 p-0 m-0"/>
+                                                        <button type="button" onclick="incrementHours()" class="w-8 h-8 rounded-full bg-gray-50 flex items-center justify-center text-gray-400 hover:text-primary transition-colors border-none">+</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Final Projection: Automated Return Timeline -->
+                                        <div class="space-y-4">
+                                            <div class="flex items-center justify-between">
+                                                <label class="block font-label text-xs font-bold uppercase tracking-widest text-secondary">Return Handover</label>
+                                                <span id="duration_label" class="text-[10px] bg-secondary-container text-on-secondary-container px-3 py-1 rounded-full font-black uppercase tracking-tighter shadow-sm">
+                                                    Total Window: <t t-esc="default_duration"/> Hrs
+                                                </span>
+                                            </div>
+                                            <div class="bg-surface-container-high/50 p-6 rounded-3xl border border-secondary/15 flex flex-col space-y-4 hover:border-secondary/40 transition-all shadow-inner">
+                                                <div class="flex items-center space-x-5">
+                                                    <div class="w-12 h-12 bg-secondary/10 rounded-2xl flex items-center justify-center text-secondary">
+                                                        <span class="material-symbols-outlined">event_repeat</span>
+                                                    </div>
+                                                    <div class="flex-1">
+                                                        <p class="text-xs text-on-surface-variant font-bold uppercase tracking-widest mb-1 opacity-60">Estimated Return</p>
+                                                        <div id="display_return_time" class="text-2xl font-black font-headline text-secondary opacity-50 italic">Pick start time...</div>
+                                                        <input type="hidden" id="end_date_input" name="end_date"/>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="default_duration_hrs" t-att-value="default_duration"/>
+
+                                    <script type="text/javascript">
+                                        const defaultHrs = parseFloat(document.getElementById('default_duration_hrs').value) || 12.0;
+                                        
+                                        function calculateReturn() {
+                                            const pickupInput = document.getElementById('pickup_datetime');
+                                            const isExtended = document.getElementById('want_more_time').checked;
+                                            const extraHrs = isExtended ? (parseInt(document.getElementById('extra_hours_input').value) || 0) : 0;
+                                            const totalHrs = defaultHrs + extraHrs;
+
+                                            // Time restriction enforcement: 7 AM - 11 PM, no minutes
+                                            if (pickupInput.value) {
+                                                let pickupDate = new Date(pickupInput.value);
+                                                let modified = false;
+                                                let now = new Date();
+                                                if (pickupDate &lt; now) {
+                                                    // Snap to current hour or next hour
+                                                    pickupDate = now;
+                                                    if (pickupDate.getMinutes() &gt; 0) {
+                                                        pickupDate.setHours(pickupDate.getHours() + 1, 0, 0, 0);
+                                                    } else {
+                                                        pickupDate.setMinutes(0, 0, 0);
+                                                    }
+                                                    modified = true;
+                                                }
+
+                                                let hours = pickupDate.getHours();
+                                                if (hours &lt; 8) { 
+                                                    pickupDate.setHours(8, 0, 0, 0); 
+                                                    modified = true; 
+                                                } else if (hours &gt; 23) {
+                                                    pickupDate.setHours(23, 0, 0, 0); 
+                                                    modified = true; 
+                                                } else if (pickupDate.getMinutes() !== 0) {
+                                                    // Force minutes to zero
+                                                    pickupDate.setMinutes(0, 0, 0);
+                                                    modified = true;
+                                                }
+
+                                                if (modified) {
+                                                    // Format back to YYYY-MM-DDTHH:MM for datetime-local
+                                                    const year = pickupDate.getFullYear();
+                                                    const month = String(pickupDate.getMonth() + 1).padStart(2, '0');
+                                                    const day = String(pickupDate.getDate()).padStart(2, '0');
+                                                    const h = String(pickupDate.getHours()).padStart(2, '0');
+                                                    const m = String(pickupDate.getMinutes()).padStart(2, '0');
+                                                    pickupInput.value = `${year}-${month}-${day}T${h}:${m}`;
+                                                }
+                                            }
+
+                                            document.getElementById('duration_label').innerText = "Total Window: " + totalHrs + " Hrs";
+
+                                            if (pickupInput.value) {
+                                                const pickupDate = new Date(pickupInput.value);
+                                                const returnDate = new Date(pickupDate.getTime() + (totalHrs * 60 * 60 * 1000));
+                                                
+                                                // Format for Odoo: YYYY-MM-DD HH:MM
+                                                const year = returnDate.getFullYear();
+                                                const month = String(returnDate.getMonth() + 1).padStart(2, '0');
+                                                const day = String(returnDate.getDate()).padStart(2, '0');
+                                                const hours = String(returnDate.getHours()).padStart(2, '0');
+                                                const minutes = String(returnDate.getMinutes()).padStart(2, '0');
+                                                
+                                                const formattedDisplay = returnDate.toLocaleString([], { month: 'short', day: '2-digit', hour: '2-digit', minute: '2-digit' });
+                                                const formattedOdoo = `${year}-${month}-${day} ${hours}:${minutes}`;
+
+                                                const displayReturnTime = document.getElementById('display_return_time');
+                                                if (displayReturnTime) {
+                                                    displayReturnTime.innerText = formattedDisplay;
+                                                    displayReturnTime.classList.remove('opacity-50', 'italic');
+                                                }
+                                                document.getElementById('end_date_input').value = formattedOdoo;
+                                            } else {
+                                                const displayReturnTime = document.getElementById('display_return_time');
+                                                if (displayReturnTime) {
+                                                    displayReturnTime.innerText = "Pick start time...";
+                                                    displayReturnTime.classList.add('opacity-50', 'italic');
+                                                }
+                                            }
+                                        }
+
+                                        document.getElementById('pickup_datetime').addEventListener('change', calculateReturn);
+                                        document.getElementById('want_more_time').addEventListener('change', (e) =&gt; {
+                                            const container = document.getElementById('extra_hours_container');
+                                            if (container) {
+                                                if (e.target.checked) {
+                                                    container.classList.remove('hidden');
+                                                } else {
+                                                    container.classList.add('hidden');
+                                                }
+                                            }
+                                            calculateReturn();
+                                        });
+                                        document.getElementById('extra_hours_input').addEventListener('input', calculateReturn);
+                                        
+                                        function incrementHours() { 
+                                            const input = document.getElementById('extra_hours_input');
+                                            input.value = parseInt(input.value) + 1;
+                                            calculateReturn();
+                                        }
+                                        function decrementHours() { 
+                                            const input = document.getElementById('extra_hours_input');
+                                            if (parseInt(input.value) &gt; 0) {
+                                                input.value = parseInt(input.value) - 1;
+                                                calculateReturn();
+                                            }
+                                        }
+                                    </script>
+
+                                    <!-- CTA Section -->
+                                    <button type="submit" class="w-full py-5 rounded-full bg-gradient-to-r from-primary to-primary-container text-on-primary font-headline font-bold text-lg flex items-center justify-center space-x-3 shadow-xl shadow-primary/30 transition-all hover:scale-[1.02] active:scale-[0.98] border-none">
+                                        <span>Confirm Timeline &amp; Open Catalog</span>
+                                        <span class="material-symbols-outlined">arrow_forward</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </t>
+    </template>
+
+    <template id="rental_catalog_template" name="nl3ab 26 - Equipment Catalog" active="False">
+        <t t-call="website.layout">
+            <style>
+                .glass-card { background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(16px); }
+                .product-card:hover { transform: translateY(-5px); }
+                .badge-package { background: linear-gradient(to right, #784e83, #93669d); color: white; }
+            </style>
+            <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+            <script id="tailwind-config">
+              tailwind.config = {
+                theme: {
+                  extend: {
+                    colors: {
+                      "primary": "#784e83", "secondary": "#3b6564",
+                      "surface": "#fbf9f8", "on-surface": "#1b1c1c"
+                    }
+                  }
+                }
+              }
+            </script>
+
+            <div id="wrap" class="bg-surface min-h-screen pt-20 pb-32">
+                <div class="max-w-7xl mx-auto px-6">
+                    <!-- Progress Header -->
+                    <div class="flex justify-between items-end mb-12">
+                        <div>
+                            <h1 class="text-5xl font-black text-on-surface tracking-tighter">Game Catalog</h1>
+                            <p class="text-gray-500 mt-2">Reserved for: <t t-esc="start_date"/> to <t t-esc="end_date"/></p>
+                        </div>
+                        <div class="flex items-center space-x-4 bg-white p-4 rounded-2xl shadow-sm border border-gray-100">
+                            <div class="text-right">
+                                <p class="text-[10px] font-bold text-gray-400 uppercase tracking-widest">Order Summary</p>
+                                <p class="text-xl font-black text-primary"><span id="cart_qty_total"><t t-esc="cart_count"/></span> Items Selected</p>
+                            </div>
+                            <a href="/rental/submit" class="bg-primary text-white p-4 rounded-xl hover:scale-105 transition-all">
+                                <span class="material-symbols-outlined">shopping_cart_checkout</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Packages Section -->
+                    <section class="mb-20">
+                        <div class="flex items-center space-x-4 mb-8">
+                            <span class="w-12 h-1 bg-primary rounded-full"/>
+                            <h2 class="text-2xl font-bold uppercase tracking-widest text-primary">Epic Packages</h2>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                            <t t-foreach="packages" t-as="product">
+                                <div class="glass-card p-6 rounded-3xl border border-white/50 shadow-lg product-card transition-all flex flex-col h-full">
+                                    <div class="aspect-video rounded-2xl bg-gray-100 mb-6 overflow-hidden">
+                                        <a t-att-href="'/shop/product/%s' % slug(product)">
+                                            <img t-att-src="website.image_url(product, 'image_256')" class="w-full h-full object-cover"/>
+                                        </a>
+                                    </div>
+                                    <h3 class="text-xl font-bold mb-2">
+                                        <a t-att-href="'/shop/product/%s' % slug(product)" class="text-on-surface hover:text-primary transition-colors">
+                                            <t t-esc="product.name"/>
+                                        </a>
+                                    </h3>
+                                    <p class="text-sm text-gray-500 mb-6 flex-grow"><t t-esc="product.description_sale or 'Full bundled experience for high-stakes play.'"/></p>
+                                    <div class="flex justify-between items-center mt-auto">
+                                        <span class="text-lg font-black text-primary">BHD <t t-esc="product.list_price"/></span>
+                                        <div class="flex items-center space-x-2 mt-auto">
+                                            <button t-att-data-product-id="product.id" class="add-to-cart-btn bg-white border-2 border-primary text-primary px-6 py-2 rounded-full font-bold hover:bg-primary hover:text-white transition-all flex-grow">
+                                                Add to Order
+                                            </button>
+                                            <button t-att-data-product-id="product.id" class="add-to-wishlist-btn w-10 h-10 bg-white border-2 border-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-all">
+                                                <span class="material-symbols-outlined text-sm">favorite</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                        </div>
+                    </section>
+
+                    <!-- Singles Sections (Categorized) -->
+                    <t t-foreach="categories" t-as="categ_name">
+                        <section class="mb-16">
+                            <div class="flex items-center space-x-4 mb-8">
+                                <span class="w-12 h-1 bg-secondary rounded-full"/>
+                                <h2 class="text-2xl font-bold uppercase tracking-widest text-secondary" t-esc="categ_name"/>
+                            </div>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                <t t-foreach="categories[categ_name]" t-as="product">
+                                    <div class="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm product-card transition-all">
+                                        <h3 class="font-bold mb-1">
+                                            <a t-att-href="'/shop/product/%s' % slug(product)" class="text-on-surface hover:text-secondary transition-colors">
+                                                <t t-esc="product.name"/>
+                                            </a>
+                                        </h3>
+                                        <p class="text-xs text-gray-400 mb-4 font-medium uppercase tracking-tighter" t-esc="product.categ_id.name or 'Pro Grade'"/>
+                                        <div class="flex justify-between items-center">
+                                            <span class="font-black text-secondary">BHD <t t-esc="product.list_price"/></span>
+                                            <div class="flex items-center space-x-1">
+                                                <button t-att-data-product-id="product.id" class="add-to-wishlist-btn w-8 h-8 bg-gray-50 rounded-full flex items-center justify-center text-gray-400 hover:text-red-500 transition-all">
+                                                    <span class="material-symbols-outlined text-[14px]">favorite</span>
+                                                </button>
+                                                <button t-att-data-product-id="product.id" class="add-to-cart-btn w-10 h-10 bg-gray-50 rounded-full flex items-center justify-center text-secondary hover:bg-secondary hover:text-white transition-all">
+                                                    <span class="material-symbols-outlined text-sm">add</span>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </t>
+                            </div>
+                        </section>
+                    </t>
+                </div>
+
+                <!-- Strategic Bottom Navigation -->
+                <div class="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-md px-6">
+                    <a href="/rental/submit" class="w-full py-5 rounded-full bg-gradient-to-r from-primary to-[#93669d] text-white font-bold text-center block shadow-2xl scale-100 hover:scale-105 active:scale-95 transition-all">
+                        Complete Strategic Booking (Final Step)
+                    </a>
+                </div>
+            </div>
+
+            <script type="text/javascript">
+                document.querySelectorAll('.add-to-cart-btn').forEach(btn =&gt; {
+                    btn.addEventListener('click', async (e) =&gt; {
+                        const target = e.currentTarget;
+                        const productId = target.dataset.productId;
+                        
+                        // Standard Odoo eCommerce Cart Bridge (JSONRPC 2.0 with CSRF)
+                        const response = await fetch('/shop/cart/update_json', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': odoo.csrf_token || ''
+                            },
+                            body: JSON.stringify({
+                                jsonrpc: '2.0',
+                                params: { product_id: parseInt(productId), add_qty: 1 }
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.result) {
+                            const cartQtyTotal = document.getElementById('cart_qty_total');
+                            if (cartQtyTotal) cartQtyTotal.innerText = data.result.cart_quantity;
+                            
+                            // Trigger Odoo's standard cart event to update the page header
+                            document.dispatchEvent(new CustomEvent('website_sale:cart_update', { detail: data.result }));
+                            
+                            if (target) {
+                                const oldText = target.innerText;
+                                target.classList.add('bg-green-500', 'text-white', 'border-green-500');
+                                target.innerText = 'Added!';
+                                setTimeout(() =&gt; {
+                                    target.classList.remove('bg-green-500', 'text-white', 'border-green-500');
+                                    target.innerText = oldText;
+                                }, 1000);
+                            }
+                        }
+                    });
+                });
+
+                document.querySelectorAll('.add-to-wishlist-btn').forEach(btn =&gt; {
+                    btn.addEventListener('click', async (e) =&gt; {
+                        const target = e.currentTarget;
+                        const productId = target.dataset.productId;
+                        
+                        const response = await fetch('/shop/wishlist/add', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-Token': odoo.csrf_token || ''
+                            },
+                            body: JSON.stringify({
+                                jsonrpc: '2.0',
+                                params: { product_id: parseInt(productId) }
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.result) {
+                            target.querySelector('span').innerText = 'check'; // Success visual feedback
+                            target.classList.add('text-green-500');
+                            setTimeout(() =&gt; {
+                                target.querySelector('span').innerText = 'favorite';
+                                target.classList.remove('text-green-500');
+                            }, 1500);
+                        }
+                    });
+                });
+            </script>
+        </t>
+    </template>
+    
+    <template id="rental_review_template" name="nl3ab 26 - Customer Review" active="False">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure h-[80vh] flex items-center justify-center bg-gray-900">
+                <div class="max-w-xl w-full p-12 bg-gray-800 rounded-3xl shadow-2xl text-white border border-gray-700">
+                    <h2 class="text-3xl font-bold mb-6 text-center text-blue-400 uppercase">Rate Your Play</h2>
+                    <p class="text-gray-400 mb-8 text-center italic">"Excellence is a habit. Help us maintain our standards."</p>
+                    
+                    <form action="/rental/review/submit" method="POST" class="space-y-8">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <input type="hidden" name="rental_id" t-att-value="rental.id"/>
+                        <input type="hidden" name="token" t-att-value="rental.portal_token"/>
+                        
+                        <div class="flex justify-center space-x-6">
+                            <t t-foreach="range(1, 6)" t-as="i">
+                                <label class="cursor-pointer group">
+                                    <input type="radio" name="rating" t-att-value="i" class="hidden" required="1"/>
+                                    <span class="text-4xl text-gray-600 group-hover:text-yellow-400 transition-colors">â˜…</span>
+                                </label>
+                            </t>
+                        </div>
+                        
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-widest">Feedback Notes</label>
+                            <textarea name="comment" rows="4" class="w-full bg-gray-700 border-0 p-6 rounded-2xl text-white focus:ring-2 focus:ring-blue-500 placeholder-gray-500" placeholder="Tell us about the equipment performance..."></textarea>
+                        </div>
+                        
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 py-4 rounded-xl font-bold uppercase tracking-widest transition-all">
+                            Submit Quality Review
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </t>
+    </template>
+
+    <template id="review_thanks_template" name="nl3ab 26 - Review Success" active="False">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure flex items-center justify-center h-[80vh] bg-black">
+                <div class="text-center space-y-8">
+                    <div class="text-6xl text-blue-500 animate-bounce">âœ”</div>
+                    <h1 class="text-5xl font-bold text-white uppercase tracking-tighter">DATA RECEIVED.</h1>
+                    <p class="text-gray-400 max-w-md mx-auto">Your feedback has been logged in the WANNA PLAY QMS audit trail. We value your strategic partnership.</p>
+                    <a href="/" class="inline-block mt-8 text-blue-400 border-b border-blue-400 pb-2 hover:text-white hover:border-white transition-all uppercase text-sm font-bold">Return to Catalog</a>
+                </div>
+            </div>
+        </t>
+    </template>
+    <!-- Flow Fix: Redirect "All Products" to "Game Catalog" on standard Product Page -->
+    <template id="product_breadcrumb_inherit" inherit_id="website_sale.product" active="False">
+        <xpath expr="//ol[hasclass('breadcrumb')]" position="replace">
+            <ol class="breadcrumb mb-8 bg-transparent p-0">
+                <li class="breadcrumb-item">
+                    <a href="/rental/catalog" class="text-primary font-bold">
+                        <span class="material-symbols-outlined text-[16px] align-middle mr-1">arrow_back</span>
+                        Back to Game Catalog
+                    </a>
+                </li>
+                <li class="breadcrumb-item active text-on-surface-variant font-medium">
+                    <t t-esc="product.name"/>
+                </li>
+            </ol>
+        </xpath>
+        <xpath expr="//div[@id='product_details']" position="before">
+             <div class="mb-4 t-if='request.session.get(\'rental_start_date\')'">
+                 <span class="text-xs font-bold text-primary uppercase tracking-widest bg-primary/5 px-4 py-2 rounded-full border border-primary/10">
+                     Reserved for: <t t-esc="request.session.get('rental_start_date')"/> to <t t-esc="request.session.get('rental_end_date')"/>
+                 </span>
+             </div>
+        </xpath>
+    </template>
+</odoo>

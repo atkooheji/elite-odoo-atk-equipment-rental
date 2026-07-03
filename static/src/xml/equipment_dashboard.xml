@@ -1,0 +1,471 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates xml:space="preserve">
+    <t t-name="atk_equipment_rental.Dashboard">
+        <div class="o_equipment_dashboard">
+
+            <!-- ═══ HEADER ═══════════════════════════════════════════════════ -->
+            <div class="dashboard_header p-3 d-flex justify-content-between align-items-center border-bottom shadow-sm">
+                <div class="header_left d-flex align-items-center gap-3">
+                    <div class="dashboard_brand_icon">
+                        <i class="fa fa-truck"/>
+                    </div>
+                    <div>
+                        <h2 class="mb-0 fw-bold">Equipment Command Center</h2>
+                        <div class="text-muted small">
+                            <t t-esc="this.state.data.labels?.project"/> | <t t-esc="this.state.data.labels?.date"/>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="header_middle d-flex align-items-center gap-3">
+                    <div class="d-flex gap-2">
+                        <span t-att-class="'status_pill ' + (this.state.data.pipeline?.critical_overdue > 0 ? 'status_pill--danger' : 'status_pill--ok')">
+                            <i t-att-class="this.state.data.pipeline?.critical_overdue > 0 ? 'fa fa-exclamation-circle' : 'fa fa-check-circle'"/>
+                            Operations
+                        </span>
+                        <span class="status_pill status_pill--ok">
+                            <i class="fa fa-check-circle"/> Finance
+                        </span>
+                        <span t-att-class="'status_pill ' + ((this.state.data.qms?.pickup_sla !== undefined &amp;&amp; this.state.data.qms?.pickup_sla &lt; 90) ? 'status_pill--warn' : 'status_pill--ok')">
+                            <i class="fa fa-shield"/> QMS
+                        </span>
+                    </div>
+                    <select class="form-select form-select-sm period_select" style="width:145px;"
+                            t-model="this.state.filters.period"
+                            t-on-change="() => this.loadDashboardData()">
+                        <option value="this_month">This Month</option>
+                        <option value="this_quarter">This Quarter</option>
+                    </select>
+                </div>
+
+                <div class="header_right d-flex gap-2">
+                    <button class="btn btn-outline-secondary btn-sm" t-on-click="() => this.loadDashboardData()">
+                        <i class="fa fa-refresh me-1"/> Refresh
+                    </button>
+                </div>
+            </div>
+
+            <!-- ═══ TABS ══════════════════════════════════════════════════════ -->
+            <ul class="nav nav-pills p-3 bg-white border-bottom gap-2 sticky-top" style="top:0;z-index:99;">
+                <li class="nav-item">
+                    <button t-att-class="{'nav-link': true, 'active': this.state.activeTab == 'logistics'}"
+                            t-on-click="() => this.setTab('logistics')">
+                        <i class="fa fa-truck"/> Logistics
+                        <t t-if="this.state.data.pipeline?.critical_overdue > 0">
+                            <span class="tab_badge tab_badge--danger"><t t-esc="this.state.data.pipeline?.critical_overdue"/></span>
+                        </t>
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button t-att-class="{'nav-link': true, 'active': this.state.activeTab == 'fleet'}"
+                            t-on-click="() => this.setTab('fleet')">
+                        <i class="fa fa-cogs"/> Fleet
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button t-att-class="{'nav-link': true, 'active': this.state.activeTab == 'financials'}"
+                            t-on-click="() => this.setTab('financials')">
+                        <i class="fa fa-bar-chart"/> Financials
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button t-att-class="{'nav-link': true, 'active': this.state.activeTab == 'qms'}"
+                            t-on-click="() => this.setTab('qms')">
+                        <i class="fa fa-shield"/> QMS &amp; Compliance
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button t-att-class="{'nav-link': true, 'active': this.state.activeTab == 'staff'}"
+                            t-on-click="() => this.setTab('staff')">
+                        <i class="fa fa-users"/> Staff &amp; Ops
+                    </button>
+                </li>
+            </ul>
+
+            <!-- ═══ CONTENT ═══════════════════════════════════════════════════ -->
+            <div class="dashboard_content p-4">
+                <t t-if="this.state.loading">
+                    <div class="text-center py-5">
+                        <div class="spinner-border text-primary" role="status"/>
+                        <div class="mt-2 text-muted fw-bold">Compiling Fleet Telemetry...</div>
+                    </div>
+                </t>
+                <t t-else="">
+
+                    <!-- ── TAB 1: LOGISTICS ──────────────────────────────── -->
+                    <div t-if="this.state.activeTab == 'logistics'" class="animate__animated animate__fadeIn">
+
+                        <!-- Morning Brief -->
+                        <div class="morning_brief p-4 mb-4 d-flex align-items-center gap-3">
+                            <div class="morning_brief_icon"><i class="fa fa-bolt"/></div>
+                            <div class="flex-grow-1">
+                                <h5 class="fw-bold mb-1">Morning Executive Brief</h5>
+                                <p class="mb-0">
+                                    <strong><t t-esc="this.state.data.pipeline?.dispatch_today"/></strong> dispatches &amp;
+                                    <strong><t t-esc="this.state.data.pipeline?.return_today"/></strong> returns scheduled today.
+                                    <t t-if="this.state.data.pipeline?.critical_overdue > 0">
+                                        <span class="text-warning ms-2 fw-bold">
+                                            <i class="fa fa-warning me-1"/>
+                                            <t t-esc="this.state.data.pipeline?.critical_overdue"/> Critical Overdue!
+                                        </span>
+                                    </t>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- KPI Row -->
+                        <div class="row g-4 mb-4">
+                            <div class="col-xl-3 col-md-6">
+                                <div class="glass-card h-100 kpi_clickable" t-on-click="() => this.onClickPipeline()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--neutral"><i class="fa fa-list-ul"/></div>
+                                        <i class="fa fa-arrow-right text-muted opacity-50"/>
+                                    </div>
+                                    <div class="kpi_value"><t t-esc="this.state.data.pipeline?.total_pending"/></div>
+                                    <div class="kpi_title">Pending Pipeline</div>
+                                    <div class="text-muted small mt-1">Drafts, Apps, Approvals</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="glass-card glass-card--blue h-100 kpi_clickable" t-on-click="() => this.onClickDispatchToday()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--blue"><i class="fa fa-truck"/></div>
+                                        <i class="fa fa-arrow-right text-muted opacity-50"/>
+                                    </div>
+                                    <div class="kpi_value text-primary"><t t-esc="this.state.data.pipeline?.dispatch_today"/></div>
+                                    <div class="kpi_title">Today's Dispatches</div>
+                                    <div class="text-muted small mt-1">Pending QC Handover</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="glass-card glass-card--green h-100 kpi_clickable">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--green"><i class="fa fa-reply"/></div>
+                                        <i class="fa fa-arrow-right text-muted opacity-50"/>
+                                    </div>
+                                    <div class="kpi_value text-success"><t t-esc="this.state.data.pipeline?.return_today"/></div>
+                                    <div class="kpi_title">Today's Returns</div>
+                                    <div class="text-muted small mt-1">Expected Inspections</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div t-att-class="'glass-card h-100 kpi_clickable' + (this.state.data.pipeline?.critical_overdue > 0 ? ' glass-card--danger' : '')"
+                                     t-on-click="() => this.onClickOverdue()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div t-att-class="'kpi_icon ' + (this.state.data.pipeline?.critical_overdue > 0 ? 'kpi_icon--danger' : 'kpi_icon--neutral')">
+                                            <i class="fa fa-warning"/>
+                                        </div>
+                                        <i class="fa fa-arrow-right text-muted opacity-50"/>
+                                    </div>
+                                    <div t-att-class="'kpi_value' + (this.state.data.pipeline?.critical_overdue > 0 ? ' text-danger' : '')">
+                                        <t t-esc="this.state.data.pipeline?.critical_overdue"/>
+                                    </div>
+                                    <div class="kpi_title">Critical Overdue</div>
+                                    <div class="text-muted small mt-1">Delayed &gt; 24 Hours</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Pipeline Flow Visualization -->
+                        <div class="pipeline_flow_card mb-4">
+                            <div class="text-muted fw-bold text-uppercase mb-3" style="font-size:0.72rem;letter-spacing:0.1em;">
+                                Order Pipeline Flow
+                            </div>
+                            <div class="d-flex align-items-stretch gap-2 flex-wrap">
+                                <div class="pipeline_stage pipeline_stage--draft">
+                                    <div class="pipeline_stage_count"><t t-esc="this.state.data.pipeline?.stage_counts?.draft || 0"/></div>
+                                    <div class="pipeline_stage_label">KYC / Draft</div>
+                                </div>
+                                <div class="d-flex align-items-center"><i class="fa fa-chevron-right pipeline_arrow"/></div>
+                                <div class="pipeline_stage pipeline_stage--approved">
+                                    <div class="pipeline_stage_count"><t t-esc="this.state.data.pipeline?.stage_counts?.approved || 0"/></div>
+                                    <div class="pipeline_stage_label">Pending Dispatch</div>
+                                </div>
+                                <div class="d-flex align-items-center"><i class="fa fa-chevron-right pipeline_arrow"/></div>
+                                <div class="pipeline_stage pipeline_stage--active">
+                                    <div class="pipeline_stage_count"><t t-esc="this.state.data.pipeline?.stage_counts?.on_rent || 0"/></div>
+                                    <div class="pipeline_stage_label">On-Rent</div>
+                                </div>
+                                <div class="d-flex align-items-center"><i class="fa fa-chevron-right pipeline_arrow"/></div>
+                                <div class="pipeline_stage pipeline_stage--inspection">
+                                    <div class="pipeline_stage_count"><t t-esc="this.state.data.pipeline?.stage_counts?.return_inspection || 0"/></div>
+                                    <div class="pipeline_stage_label">QMS Inspection</div>
+                                </div>
+                                <div class="d-flex align-items-center"><i class="fa fa-chevron-right pipeline_arrow"/></div>
+                                <div class="pipeline_stage pipeline_stage--closed">
+                                    <div class="pipeline_stage_count"><t t-esc="this.state.data.pipeline?.stage_counts?.closed_today || 0"/></div>
+                                    <div class="pipeline_stage_label">Closed Today</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revenue Leakage Alert -->
+                        <t t-if="this.state.data.staff?.revenue_leakage_count > 0">
+                            <div class="leakage_alert d-flex align-items-center justify-content-between p-3 rounded-4">
+                                <div class="d-flex align-items-center gap-3">
+                                    <i class="fa fa-exclamation-triangle text-danger fs-4"/>
+                                    <div>
+                                        <h6 class="fw-bold mb-0">Revenue Leakage Detected</h6>
+                                        <p class="mb-0 small text-muted">
+                                            <t t-esc="this.state.data.staff?.revenue_leakage_count"/> orders stuck in Return Inspection &gt; 24h — assets &amp; cashflow locked.
+                                        </p>
+                                    </div>
+                                </div>
+                                <button class="btn btn-danger btn-sm ms-3" t-on-click="() => this.onClickOverdue()">
+                                    View &amp; Resolve
+                                </button>
+                            </div>
+                        </t>
+                    </div>
+
+                    <!-- ── TAB 2: FLEET ──────────────────────────────────── -->
+                    <div t-if="this.state.activeTab == 'fleet'" class="animate__animated animate__fadeIn">
+                        <div class="row g-4 mb-4">
+                            <div class="col-xl-3 col-md-6">
+                                <div class="glass-card glass-card--green h-100 kpi_clickable" t-on-click="() => this.onClickInventory()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--green"><i class="fa fa-tachometer"/></div>
+                                    </div>
+                                    <div class="kpi_value text-success"><t t-esc="this.formatPercentage(this.state.data.inventory?.utilization_rate)"/></div>
+                                    <div class="kpi_title">Utilization Rate</div>
+                                    <div class="mt-2">
+                                        <div class="kpi_progress">
+                                            <div class="kpi_progress_bar kpi_progress_bar--green"
+                                                 t-att-style="'width:' + Math.min(this.state.data.inventory?.utilization_rate || 0, 100) + '%'"/>
+                                        </div>
+                                    </div>
+                                    <div class="text-muted small mt-1">Fleet Active %</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="glass-card glass-card--blue h-100 kpi_clickable" t-on-click="() => this.onClickInventory()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--blue"><i class="fa fa-check-circle"/></div>
+                                    </div>
+                                    <div class="kpi_value text-primary"><t t-esc="this.state.data.inventory?.available"/></div>
+                                    <div class="kpi_title">Ready to Rent</div>
+                                    <div class="text-muted small mt-1">Available in Yard</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="glass-card h-100 kpi_clickable" t-on-click="() => this.onClickInventory()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--gold"><i class="fa fa-arrow-up"/></div>
+                                    </div>
+                                    <div class="kpi_value"><t t-esc="this.state.data.inventory?.rented"/></div>
+                                    <div class="kpi_title">Deployed (On-Rent)</div>
+                                    <div class="text-muted small mt-1">Active Deployments</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-3 col-md-6">
+                                <div class="glass-card glass-card--danger h-100 kpi_clickable" t-on-click="() => this.onClickInventory()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--danger"><i class="fa fa-wrench"/></div>
+                                    </div>
+                                    <div class="kpi_value text-danger"><t t-esc="this.state.data.inventory?.quarantine"/></div>
+                                    <div class="kpi_title">Quarantine / Maint.</div>
+                                    <div class="text-muted small mt-1">Out of Service</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fleet Photo Feed -->
+                        <div class="row g-3 mt-2">
+                            <div class="col-12"><h5 class="fw-bold mb-3">Live Fleet Photo Feed</h5></div>
+                            <t t-foreach="this.state.data.fleet_photos || []" t-as="item" t-key="item.id">
+                                <div class="col-xl-2 col-md-4 col-6">
+                                    <div class="fleet_photo_card border-0 shadow-sm rounded-4 overflow-hidden h-100">
+                                        <div class="fleet_photo_img d-flex align-items-center justify-content-center">
+                                            <img t-att-src="item.image_url" t-att-alt="item.name"/>
+                                        </div>
+                                        <div class="p-2">
+                                            <div class="text-uppercase fw-bold text-muted mb-1" style="font-size:9px;"><t t-esc="item.category"/></div>
+                                            <p class="fw-semibold mb-0 text-truncate" style="font-size:12px;"><t t-esc="item.name"/></p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </t>
+                            <t t-if="!this.state.data.fleet_photos || this.state.data.fleet_photos.length === 0">
+                                <div class="col-12 text-center py-5 text-muted">
+                                    <i class="fa fa-image fa-2x mb-2 d-block opacity-50"/>
+                                    No fleet photos available
+                                </div>
+                            </t>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB 3: FINANCIALS ─────────────────────────────── -->
+                    <div t-if="this.state.activeTab == 'financials'" class="animate__animated animate__fadeIn">
+                        <div class="row g-4 mb-4">
+                            <div class="col-xl-4 col-md-6">
+                                <div class="glass-card glass-card--green h-100 kpi_clickable" t-on-click="() => this.onClickFinancials()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--green"><i class="fa fa-line-chart"/></div>
+                                    </div>
+                                    <div class="kpi_value text-success"><t t-esc="this.formatCurrency(this.state.data.financial?.revenue_mtd)"/></div>
+                                    <div class="kpi_title">Gross Revenue (MTD)</div>
+                                    <div class="text-muted small mt-1">Active &amp; Closed Orders</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <div class="glass-card glass-card--blue h-100 kpi_clickable" t-on-click="() => this.onClickFinancials()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--blue"><i class="fa fa-trophy"/></div>
+                                    </div>
+                                    <div class="kpi_value text-primary"><t t-esc="this.formatCurrency(this.state.data.financial?.profit_mtd)"/></div>
+                                    <div class="kpi_title">Net Profit (MTD)</div>
+                                    <div class="text-muted small mt-1">Revenue − Internal Costs</div>
+                                    <t t-if="this.state.data.financial?.revenue_mtd > 0">
+                                        <div class="d-flex justify-content-between small text-muted mt-3 mb-1">
+                                            <span>Margin</span>
+                                            <span><t t-esc="this.formatPercentage((this.state.data.financial?.profit_mtd / this.state.data.financial?.revenue_mtd) * 100)"/></span>
+                                        </div>
+                                        <div class="kpi_progress">
+                                            <div class="kpi_progress_bar kpi_progress_bar--blue"
+                                                 t-att-style="'width:' + Math.max(0, Math.min((this.state.data.financial?.profit_mtd / this.state.data.financial?.revenue_mtd) * 100, 100)) + '%'"/>
+                                        </div>
+                                    </t>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <div class="glass-card glass-card--danger h-100 kpi_clickable" t-on-click="() => this.onClickStaff()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--danger"><i class="fa fa-fire"/></div>
+                                    </div>
+                                    <div class="kpi_value text-danger"><t t-esc="this.formatCurrency(this.state.data.financial?.total_staff_cost)"/></div>
+                                    <div class="kpi_title">Staff / Resource Burn</div>
+                                    <div class="text-muted small mt-1">Internal Ops Expense</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB 4: QMS &amp; COMPLIANCE ───────────────────── -->
+                    <div t-if="this.state.activeTab == 'qms'" class="animate__animated animate__fadeIn">
+                        <div class="row g-4 mb-4">
+                            <div class="col-md-6">
+                                <div t-att-class="'glass-card h-100 kpi_clickable ' + (this.state.data.qms?.pickup_sla &lt; 90 ? 'glass-card--danger' : 'glass-card--green')">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div t-att-class="'kpi_icon ' + (this.state.data.qms?.pickup_sla &lt; 90 ? 'kpi_icon--danger' : 'kpi_icon--green')">
+                                            <i class="fa fa-truck"/>
+                                        </div>
+                                        <span t-att-class="'badge ' + (this.state.data.qms?.pickup_sla &gt;= 90 ? 'bg-success' : 'bg-danger')">
+                                            Target: 90%
+                                        </span>
+                                    </div>
+                                    <div t-att-class="'kpi_value ' + (this.state.data.qms?.pickup_sla &lt; 90 ? 'text-danger' : 'text-success')">
+                                        <t t-esc="this.formatPercentage(this.state.data.qms?.pickup_sla)"/>
+                                    </div>
+                                    <div class="kpi_title">Pickup SLA Compliance</div>
+                                    <div class="text-muted small mb-2">Total: <t t-esc="this.state.data.qms?.total_pickup_count"/> pickups</div>
+                                    <div class="kpi_progress">
+                                        <div t-att-class="'kpi_progress_bar ' + (this.state.data.qms?.pickup_sla &lt; 90 ? 'kpi_progress_bar--danger' : 'kpi_progress_bar--green')"
+                                             t-att-style="'width:' + Math.min(this.state.data.qms?.pickup_sla || 0, 100) + '%'"/>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div t-att-class="'glass-card h-100 kpi_clickable ' + (this.state.data.qms?.return_sla &lt; 85 ? 'glass-card--danger' : 'glass-card--green')">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div t-att-class="'kpi_icon ' + (this.state.data.qms?.return_sla &lt; 85 ? 'kpi_icon--danger' : 'kpi_icon--green')">
+                                            <i class="fa fa-reply"/>
+                                        </div>
+                                        <span t-att-class="'badge ' + (this.state.data.qms?.return_sla &gt;= 85 ? 'bg-success' : 'bg-danger')">
+                                            Target: 85%
+                                        </span>
+                                    </div>
+                                    <div t-att-class="'kpi_value ' + (this.state.data.qms?.return_sla &lt; 85 ? 'text-danger' : 'text-success')">
+                                        <t t-esc="this.formatPercentage(this.state.data.qms?.return_sla)"/>
+                                    </div>
+                                    <div class="kpi_title">Return SLA Compliance</div>
+                                    <div class="text-muted small mb-2">Total: <t t-esc="this.state.data.qms?.total_return_count"/> returns</div>
+                                    <div class="kpi_progress">
+                                        <div t-att-class="'kpi_progress_bar ' + (this.state.data.qms?.return_sla &lt; 85 ? 'kpi_progress_bar--danger' : 'kpi_progress_bar--green')"
+                                             t-att-style="'width:' + Math.min(this.state.data.qms?.return_sla || 0, 100) + '%'"/>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- QMS Integrity Panel -->
+                        <div class="qms_integrity_panel rounded-4 p-4">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <i class="fa fa-shield fa-2x text-info"/>
+                                <div>
+                                    <h5 class="fw-bold mb-0">QMS Integrity Monitoring</h5>
+                                    <p class="text-muted small mb-0">All inspections, handovers, and return QC failures are logged for ISO/Audit compliance.</p>
+                                </div>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-md-4">
+                                    <div class="qms_stat_box rounded-3 p-3 text-center">
+                                        <div class="fw-bold fs-5 text-success mb-1"><i class="fa fa-check-circle"/></div>
+                                        <div class="small text-muted">Dispatch QC Active</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="qms_stat_box rounded-3 p-3 text-center">
+                                        <div class="fw-bold fs-5 text-success mb-1"><i class="fa fa-check-circle"/></div>
+                                        <div class="small text-muted">Return QC Active</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="qms_stat_box rounded-3 p-3 text-center">
+                                        <div class="fw-bold fs-5 text-info mb-1"><i class="fa fa-lock"/></div>
+                                        <div class="small text-muted">Audit Trail Enabled</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ── TAB 5: STAFF &amp; OPS ─────────────────────────── -->
+                    <div t-if="this.state.activeTab == 'staff'" class="animate__animated animate__fadeIn">
+                        <div class="row g-4 mb-4">
+                            <div class="col-xl-4 col-md-6">
+                                <div class="glass-card glass-card--blue h-100 kpi_clickable" t-on-click="() => this.onClickStaff()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--blue"><i class="fa fa-hard-hat"/></div>
+                                    </div>
+                                    <div class="kpi_value text-primary"><t t-esc="this.state.data.staff?.operator_count"/></div>
+                                    <div class="kpi_title">Active Operators</div>
+                                    <div class="text-muted small mt-1">On-Site Assignments</div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <div class="glass-card glass-card--green h-100 kpi_clickable" t-on-click="() => this.onClickFinancials()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--green"><i class="fa fa-rocket"/></div>
+                                    </div>
+                                    <div class="kpi_value text-success">
+                                        x<t t-esc="(this.state.data.staff?.efficiency_index || 0).toFixed(2)"/>
+                                    </div>
+                                    <div class="kpi_title">Efficiency Index (ROI)</div>
+                                    <div class="text-muted small mt-1">Revenue per BD of staff cost</div>
+                                    <div class="mt-3">
+                                        <div class="kpi_progress">
+                                            <div class="kpi_progress_bar kpi_progress_bar--green"
+                                                 t-att-style="'width:' + Math.min((this.state.data.staff?.efficiency_index || 0) * 10, 100) + '%'"/>
+                                        </div>
+                                        <div class="small text-muted mt-1">Target: &gt; 5x</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-4 col-md-6">
+                                <div class="glass-card h-100 kpi_clickable" t-on-click="() => this.onClickStaff()">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <div class="kpi_icon kpi_icon--gold"><i class="fa fa-money"/></div>
+                                    </div>
+                                    <div class="kpi_value"><t t-esc="this.formatCurrency(this.state.data.staff?.total_cost)"/></div>
+                                    <div class="kpi_title">Total Internal Payroll</div>
+                                    <div class="text-muted small mt-1">Order-Specific Labor Costs</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </t>
+            </div>
+        </div>
+    </t>
+</templates>

@@ -1,0 +1,51 @@
+{
+    'name': 'ATK - Equipment Rental Management',
+    'version': '19.0.5.1.6',
+    'summary': 'Equipment & Vehicle Rental Management with QMS Workflow and Command Center Dashboard',
+    'description': """
+    A comprehensive Module for Managing the Rental of Equipment, Machinery, and Tools with rigorous QMS standards.
+    Refactored for modularity and scalability.
+    """,
+    'category': 'Industries',
+    'author': 'Elite Finance Master',
+    'depends': ['base', 'mail', 'product', 'account', 'stock', 'sale_management', 'web', 'website_sale', 'auth_signup', 'loyalty', 'atk_prop_mgmt'],
+    'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
+        'data/equipment_rental_data.xml',
+        'data/ir_cron_data.xml',
+        'data/rental_email_templates.xml',
+        'views/root_menu.xml',
+        'views/action_views.xml',
+        'data/website_menu_data.xml',
+        'data/loyalty_program_data.xml',
+        'wizard/rental_pickup_wizard_views.xml',
+        'wizard/rental_return_wizard_views.xml',
+        'wizard/rental_damage_wizard_views.xml',
+        'wizard/rental_order_import_wizard_views.xml',
+        'views/equipment_rental_views.xml',
+        'views/equipment_qc_views.xml',
+        'views/product_views.xml',
+        'views/res_config_settings_views.xml',
+        'views/rental_dashboard_views.xml',
+        'views/account_move_views.xml',
+        'views/rental_terms_views.xml',
+        'views/website_rental_templates.xml',
+        'views/menu_views.xml',
+        'reports/report_rental_qms.xml',
+        'reports/report_rental_mis_profit.xml',
+        'reports/report_rental_quotation.xml',
+        'reports/report_rental_audit_log.xml',
+    ],
+    'assets': {
+        'web.assets_backend': [
+            'atk_equipment_rental/static/src/scss/equipment_dashboard.scss',
+            'atk_equipment_rental/static/src/js/equipment_dashboard.js',
+            'atk_equipment_rental/static/src/xml/equipment_dashboard.xml',
+        ],
+    },
+    'installable': True,
+    'application': True,
+    'license': 'LGPL-3',
+}
+
